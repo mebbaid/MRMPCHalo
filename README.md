@@ -7,6 +7,8 @@
 # :orange_book: The general idea
 This repo tests the recently proposed multirate planning and nmpc control scheme on the problem of translunar station-keeping for a _quasi_ halo 
 orbit.
+
+
 ![alt text](https://github.com/mebbaid/MRMPCHalo/blob/main/image/Header.JPG)
 
 # :page_facing_up: Dependencies
