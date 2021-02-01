@@ -66,7 +66,7 @@ void mexFunction( int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[] )
     OnlineData z2; 
     OnlineData z3; 
     OnlineData z4; 
-    SIMexport ExportModule1( 1, 0.1 );
+    SIMexport ExportModule1( 1, 0.05 );
     ExportModule1.set( GENERATE_MATLAB_INTERFACE, 1 );
     uint options_flag;
     options_flag = ExportModule1.set( INTEGRATOR_TYPE, INT_IRK_GL2 );

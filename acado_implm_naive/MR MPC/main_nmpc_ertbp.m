@@ -11,7 +11,7 @@ else
     
 end
 %% PARAMETERS
-Ts = 0.1;
+Ts = 0.05;
 EXPORT = 1;
 mu = 0.012149;
 L2 = 1.556;
@@ -85,7 +85,7 @@ end
 
 %% MPCexport
 acadoSet('problemname', 'nmpc');
-Np = 40;
+Np = 10;
 ocp = acado.OCP( 0.0, Np*Ts, Np );
 h = [xx xy xz xxd xyd xzd ux uy uz];
 hN = [xx xy xz xxd xyd xzd]; % terminal penalty

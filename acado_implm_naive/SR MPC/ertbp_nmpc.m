@@ -2,7 +2,7 @@ clc;
 clear all; close all;
 
 
-perturbed = 1;  % simulate perturbations
+perturbed = 0;  % simulate perturbations
 
 if perturbed == 1
     e   = 0.5; 
@@ -85,7 +85,7 @@ end
 
 %% MPCexport
 acadoSet('problemname', 'nmpc');
-Np = 30;
+Np = 10;
 ocp = acado.OCP( 0.0, Np*Ts, Np );
 h = [xx xy xz xxd xyd xzd ux uy uz];
 hN = [xx xy xz xxd xyd xzd]; % terminal penalty
@@ -177,20 +177,10 @@ while time(end) < sim_time
     disp(['current time: ' num2str(nextTime) ' ' char(9) ' (RTI step -- QP error: ' num2str(output.info.status) ',' ' ' char(2) ' KKT val: ' num2str(output.info.kktValue,'% 1.2e') ',' ' ' char(2) ' CPU time: ' num2str(round(output.info.cpuTime*1e6)) ' µs)'])
     time = [time nextTime];
     % update reference
-    ho1 = [(-k*(1-c(1)+Omega^2)/(2*Omega))*cos(nextTime);
-           k*sin(nextTime);
-           k*cos(nextTime)];
-
-    diffho1 = [(k*(1-c(1)+Omega^2)/2)*sin(Omega*nextTime);
-               Omega*k*cos(Omega*nextTime);
-               -Omega_z*k*sin(Omega_z*nextTime)];
-
-    xr = Seq + [ho1;diffho1];
-    Xref = xr';
-    input.y = [repmat(Xref,Np,1) Uref];
-    % input.y = [xr(:,2:end)' Uref];
-    input.yN = xr';
-    pos_ref = [pos_ref ; Xref(1:3)];
+    xr = ref_gen(nextTime,k,c,Omega, Omega_z, Seq, Ts);
+    input.y  = [repmat(xr(:,1)',Np,1) Uref];
+    input.yN = xr(:,2)';
+    pos_ref = [pos_ref ; xr(1:3,2)'];
     a1 = a(1)*e*cos(nextTime+phi);
     alpha = a1;
     b1 = b(1)*e*cos(nextTime+phi);

@@ -58,11 +58,15 @@ yhat(:,3) = x3;
 x4 = Ad*x3 + Bd*u_2(:,2);
 yhat(:,4) = x4;
 
-for i = 0:4:Np
-    ref(i+1,:) = yhat(:,1)';
-    ref(i+2,:) = yhat(:,2)';
-    ref(i+3,:) = yhat(:,3)';
-    ref(i+4,:) = yhat(:,4)';
+ref(1:4,:) = yhat';
+if Np > 4
+    ref(5:Np,:) = repmat(yhat(:,4)', Np-4,1);
 end
+% for i = 0:4:Np
+%     ref(i+1,:) = yhat(:,1)';
+%     ref(i+2,:) = yhat(:,2)';
+%     ref(i+3,:) = yhat(:,3)';
+%     ref(i+4,:) = yhat(:,4)';
+% end
 end
 
