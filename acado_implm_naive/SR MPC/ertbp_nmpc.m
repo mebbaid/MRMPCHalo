@@ -43,7 +43,7 @@ N = [0 -1 0;
         1 0 0;
         0 0 0];
 ddot   =  -M*[xx;xy;xz] - 2*N*[xxd;xyd;xzd] - (2*M*[xx;xy;xz] + 2*N*[xxd;xyd;xzd])*z1 ...
-           - M*[xx;xy;xz]*z2 - N*[xx;xy;xz]*z3 + ones(3,1)*z4 - ed1*(1 - mu)/absed1^3 ...
+           - M*[xx;xy;xz]*z2 - N*[xx;xy;xz]*z3 - ed1*(1 - mu)/absed1^3 ...
            - ed2*mu/absed2^3; 
        
 ddot_approx =  -M*[xx;xy;xz] - 2*N*[xxd;xyd;xzd] - ed1*(1 - mu)/absed1^3 ...
@@ -55,12 +55,19 @@ f_expl = [ dot(xx) == xxd; ...
            dot(xyd) == ddot(2) + uy; ...
            dot(xzd) == ddot(3) + uz];% SIMexport
        
-f_pred = [ dot(xx) == xxd; ...
+% f_pred = [ dot(xx) == xxd; ...
+%            dot(xy) == xyd; ...
+%            dot(xz) == xzd; ...
+%            dot(xxd) == ddot_approx(1) + ux; ...
+%            dot(xyd) == ddot_approx(2) + uy; ...
+%            dot(xzd) == ddot_approx(3) + uz];% SIMexport       
+
+f_pred  = [ dot(xx) == xxd; ...
            dot(xy) == xyd; ...
            dot(xz) == xzd; ...
-           dot(xxd) == ddot_approx(1) + ux; ...
-           dot(xyd) == ddot_approx(2) + uy; ...
-           dot(xzd) == ddot_approx(3) + uz];% SIMexport       
+           dot(xxd) == 2*xyd+xx-(1-mu)*(xx+mu)/absed1^3 - mu*(xx-1+mu)/absed2^3 + ux; ...
+           dot(xyd) == -2*xxd + xy - (1-mu)*xy/absed1^3 - mu*xy/absed2^3 + uy; ...
+           dot(xzd) == -(1-mu)*xz/absed1^3 - mu*xz/absed2^3 + uz];% SIMexport using CRTBP model for prediction
        
 acadoSet('problemname', 'sim_ertbp');
 numSteps = 3;
@@ -107,7 +114,7 @@ end
 
 %% SIMULATION
 % SIM PARAMETERS
-X0 = [L2 1 0 0 0 0];
+X0 = [L2 0 0 0 0 0];
 z0 = [0 0 0 0];
 % ref gen
 Seq = [L2 + insertion_error;0;0;0;0;0];   
@@ -128,7 +135,7 @@ input.u = Uref;
 input.y = [repmat(Xref,Np,1) Uref];
 % input.y = [xr(:,2:end)' Uref];
 input.yN = xr';
-input.W = diag([10 10 10 1 1 1 0.1 0.1 0.1]);
+input.W = diag([10 10 10 1 1 1 0 0 0]);
 input.WN = diag([10 10 10 1 1 1]); 
 input.shifting.strategy = 1;
 
@@ -162,7 +169,7 @@ while time(end) < sim_time
     % Simulate system
     sim_input.x = state_sim(end,:).';
     sim_input.u = output.u(1,:).';
-    sim_input.od = od(1,:)';
+    sim_input.od = od(1,1:3)';   % only the first three terms of dist appear in pr
     states = integrate_ertbp(sim_input);
     state_sim = [state_sim; states.value']; 
     iter = iter+1;
@@ -213,4 +220,4 @@ ylabel('Perturbation')
 figure;
 semilogy(time(1:end-1), ValueFunc_MPC, ':bx');
 xlabel('time(s)')
-ylabel('Obj_value')
+ylabel('Obj Value')
