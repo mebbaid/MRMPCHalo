@@ -6,9 +6,9 @@ delta = 0.05; % adjust for hours (0.15 is one hour) (0.01 = 4 minutes)
 % delta_b = delta/2;
 saturation = 0; % set to one to incorporate saturation on the control.
 sat_constraint = 0; % set to one to include saturation as as a constraint in MPC formulation
-disturbance = 0;  % set to one to incoporate disturbances
-srp         = 0; % 
-emulation = delta; % put emulation = delta to simulate emulated control for FL
+disturbance = 1;  % set to one to incoporate disturbances
+srp         = 0; % solar radiation pressure
+emulation = -1; % put emulation = delta to simulate emulated control for FL
 delay = 0; % put to one to include effect of delay
 if saturation == 1
     satValue = 15; % adjust this value to saturate inputs
@@ -44,7 +44,8 @@ a(2) = 1/2;
 b(1) = 2;
 b(2) = 5/2;
 phi = 0;
-e   = 0;
+e   =  0.0549;  % EM rotating system e
+% e   = 0;
 
 % satellite init position and velocity
 u0 = [0;0;0];
@@ -75,7 +76,7 @@ A = [zeros(3) eye(3); A21 A22];
 G = [zeros(3); eye(3)];
 K = place(A,G,pole);
 
-simTime = 10; % set to 4380 for long term 6 months station keeping
+simTime = 15; % set to 4380 for long term 6 months station keeping
 ref_select = 1;  % set to 1 for L2 orbit, set to 2 for to consider also effects of eccentricity
 t = 0:10^-3:simTime;
 
@@ -166,7 +167,7 @@ l.FontSize = 18;
 subplot(3,2,6);
 l = title('Primer disturbances');
 set(l,'Interpreter','Latex');
-plot(t, zfl(:,1), 'k', 'LineWidth', 1.5);
+plot(t*timescale, zfl(:,1), 'k', 'LineWidth', 1.5);
 hold on; grid on;
 plot(t*timescale, zfl(:,2), 'r', 'LineWidth', 1.5);
 plot(t*timescale, zfl(:,3), 'b', 'LineWidth', 1.5);

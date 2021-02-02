@@ -5,7 +5,7 @@ clear all; close all;
 perturbed = 0;  % simulate perturbations
 
 if perturbed == 1
-    e   = 0.5; 
+    e   =  0.0549;  % EM rotating system e
 else
     e   = 0;
     
