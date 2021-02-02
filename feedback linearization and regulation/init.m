@@ -44,7 +44,7 @@ a(2) = 1/2;
 b(1) = 2;
 b(2) = 5/2;
 phi = 0;
-e   = exp(0);
+e   = 0;
 
 % satellite init position and velocity
 u0 = [0;0;0];
