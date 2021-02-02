@@ -114,7 +114,7 @@ void mexFunction( int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[] )
     if(options_flag != 0) mexErrMsgTxt("ACADO export failed when setting the following option: SPARSE_QP_SOLUTION");
     options_flag = ExportModule2.set( LEVENBERG_MARQUARDT, 1.000000E-05 );
     if(options_flag != 0) mexErrMsgTxt("ACADO export failed when setting the following option: LEVENBERG_MARQUARDT");
-    options_flag = ExportModule2.set( INTEGRATOR_TYPE, INT_RK4 );
+    options_flag = ExportModule2.set( INTEGRATOR_TYPE, INT_BDF );
     if(options_flag != 0) mexErrMsgTxt("ACADO export failed when setting the following option: INTEGRATOR_TYPE");
     options_flag = ExportModule2.set( NUM_INTEGRATOR_STEPS, 30 );
     if(options_flag != 0) mexErrMsgTxt("ACADO export failed when setting the following option: NUM_INTEGRATOR_STEPS");

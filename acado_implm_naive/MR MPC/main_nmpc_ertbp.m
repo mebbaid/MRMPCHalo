@@ -95,11 +95,13 @@ ocp.minimizeLSQ( W, h );
 ocp.minimizeLSQEndTerm( WN, hN );
 ocp.setModel(f_pred);
 mpc = acado.OCPexport( ocp );
+% mpc.set( 'MAX_NUM_ITERATIONS',30 );
 mpc.set( 'HESSIAN_APPROXIMATION', 'GAUSS_NEWTON' );
 mpc.set( 'DISCRETIZATION_TYPE', 'MULTIPLE_SHOOTING' );
 mpc.set( 'SPARSE_QP_SOLUTION', 'FULL_CONDENSING_N2');
 mpc.set( 'LEVENBERG_MARQUARDT', 1e-5 );
-mpc.set( 'INTEGRATOR_TYPE', 'INT_RK4' );
+% mpc.set( 'INTEGRATOR_TYPE', 'INT_RK4' );
+mpc.set( 'INTEGRATOR_TYPE', 'INT_BDF' );
 mpc.set( 'NUM_INTEGRATOR_STEPS', numSteps*Np );
 mpc.set( 'QP_SOLVER', 'QP_QPOASES' );
 

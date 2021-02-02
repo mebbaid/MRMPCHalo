@@ -84,7 +84,7 @@ extern "C"
 /** Number of integration steps per shooting interval. */
 #define ACADO_RK_NIS 3
 /** Number of Runge-Kutta stages per integration step. */
-#define ACADO_RK_NSTAGES 4
+#define ACADO_RK_NSTAGES 1
 /** Single versus double precision data type representation. */
 #define ACADO_SINGLE_PRECISION 0
 /** Providing interface for arrival cost. */
@@ -159,16 +159,45 @@ real_t x0[ 6 ];
  */
 typedef struct ACADOworkspace_
 {
-/** Column vector of size: 348 */
-real_t rhs_aux[ 348 ];
+real_t rk_dim6_swap;
+
+/** Column vector of size: 6 */
+real_t rk_dim6_bPerm[ 6 ];
+
+/** Column vector of size: 114 */
+real_t rhs_aux[ 114 ];
 
 real_t rk_ttt;
 
-/** Row vector of size: 67 */
-real_t rk_xxx[ 67 ];
+/** Row vector of size: 13 */
+real_t rk_xxx[ 13 ];
 
-/** Matrix of size: 4 x 60 (row major format) */
-real_t rk_kkk[ 240 ];
+/** Column vector of size: 6 */
+real_t rk_kkk[ 6 ];
+
+/** Matrix of size: 6 x 6 (row major format) */
+real_t rk_A[ 36 ];
+
+/** Column vector of size: 6 */
+real_t rk_b[ 6 ];
+
+/** Row vector of size: 6 */
+int rk_dim6_perm[ 6 ];
+
+/** Column vector of size: 6 */
+real_t rk_rhsTemp[ 6 ];
+
+/** Row vector of size: 54 */
+real_t rk_diffsTemp2[ 54 ];
+
+/** Column vector of size: 6 */
+real_t rk_diffK[ 6 ];
+
+/** Matrix of size: 6 x 9 (row major format) */
+real_t rk_diffsPrev2[ 54 ];
+
+/** Matrix of size: 6 x 9 (row major format) */
+real_t rk_diffsNew2[ 54 ];
 
 /** Row vector of size: 67 */
 real_t state[ 67 ];
@@ -264,7 +293,7 @@ real_t y[ 30 ];
 
 /** Performs the integration and sensitivity propagation for one shooting interval.
  *
- *  \param rk_eta Working array to pass the input values and return the results.
+ *  \param rk_eta Working array of size 13 to pass the input values and return the results.
  *  \param resetIntegrator The internal memory of the integrator can be reset.
  *
  *  \return Status code of the integrator.
@@ -283,7 +312,7 @@ void acado_rhs(const real_t* in, real_t* out);
  *  \param in Input to the exported function.
  *  \param out Output of the exported function.
  */
-void acado_rhs_ext(const real_t* in, real_t* out);
+void acado_diffs(const real_t* in, real_t* out);
 
 /** Preparation step of the RTI scheme.
  *
