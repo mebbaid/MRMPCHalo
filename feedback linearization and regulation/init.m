@@ -2,13 +2,13 @@ clc
 clear all
 
 %% set case to be simulated
-delta = 0.05; % adjust for hours (0.15 is one hour) (0.01 = 4 minutes)
+delta = 0.1; % adjust for hours (0.15 is one hour) (0.01 = 4 minutes)
 % delta_b = delta/2;
 saturation = 0; % set to one to incorporate saturation on the control.
 sat_constraint = 0; % set to one to include saturation as as a constraint in MPC formulation
 disturbance = 1;  % set to one to incoporate disturbances
 srp         = 0; % solar radiation pressure
-emulation = -1; % put emulation = delta to simulate emulated control for FL
+emulation =delta; % put emulation = delta to simulate emulated control for FL
 delay = 0; % put to one to include effect of delay
 if saturation == 1
     satValue = 15; % adjust this value to saturate inputs
