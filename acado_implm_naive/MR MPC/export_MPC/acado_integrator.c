@@ -380,10 +380,10 @@ b[5] = acadoWorkspace.rk_dim6_bPerm[5];
 
 /** Column vector of size: 1 */
 static const real_t acado_Ah_mat[ 1 ] = 
-{ 8.3333333333333332e-03 };
+{ 1.6666666666666666e-02 };
 
 
-/* Fixed step size:0.0166667 */
+/* Fixed step size:0.0333333 */
 int acado_integrate( real_t* const rk_eta, int resetIntegrator )
 {
 int error;
@@ -545,7 +545,7 @@ acadoWorkspace.rk_diffK[i + 5] = acadoWorkspace.rk_b[i * 6 + 5];
 for (i = 0; i < 6; ++i)
 {
 acadoWorkspace.rk_diffsNew2[(i * 9) + (run1)] = (i == run1-0);
-acadoWorkspace.rk_diffsNew2[(i * 9) + (run1)] += + acadoWorkspace.rk_diffK[i]*(real_t)1.6666666666666666e-02;
+acadoWorkspace.rk_diffsNew2[(i * 9) + (run1)] += + acadoWorkspace.rk_diffK[i]*(real_t)3.3333333333333333e-02;
 }
 }
 for (run1 = 0; run1 < 3; ++run1)
@@ -571,15 +571,15 @@ acadoWorkspace.rk_diffK[i + 5] = acadoWorkspace.rk_b[i * 6 + 5];
 }
 for (i = 0; i < 6; ++i)
 {
-acadoWorkspace.rk_diffsNew2[(i * 9) + (run1 + 6)] = + acadoWorkspace.rk_diffK[i]*(real_t)1.6666666666666666e-02;
+acadoWorkspace.rk_diffsNew2[(i * 9) + (run1 + 6)] = + acadoWorkspace.rk_diffK[i]*(real_t)3.3333333333333333e-02;
 }
 }
-rk_eta[0] += + acadoWorkspace.rk_kkk[0]*(real_t)1.6666666666666666e-02;
-rk_eta[1] += + acadoWorkspace.rk_kkk[1]*(real_t)1.6666666666666666e-02;
-rk_eta[2] += + acadoWorkspace.rk_kkk[2]*(real_t)1.6666666666666666e-02;
-rk_eta[3] += + acadoWorkspace.rk_kkk[3]*(real_t)1.6666666666666666e-02;
-rk_eta[4] += + acadoWorkspace.rk_kkk[4]*(real_t)1.6666666666666666e-02;
-rk_eta[5] += + acadoWorkspace.rk_kkk[5]*(real_t)1.6666666666666666e-02;
+rk_eta[0] += + acadoWorkspace.rk_kkk[0]*(real_t)3.3333333333333333e-02;
+rk_eta[1] += + acadoWorkspace.rk_kkk[1]*(real_t)3.3333333333333333e-02;
+rk_eta[2] += + acadoWorkspace.rk_kkk[2]*(real_t)3.3333333333333333e-02;
+rk_eta[3] += + acadoWorkspace.rk_kkk[3]*(real_t)3.3333333333333333e-02;
+rk_eta[4] += + acadoWorkspace.rk_kkk[4]*(real_t)3.3333333333333333e-02;
+rk_eta[5] += + acadoWorkspace.rk_kkk[5]*(real_t)3.3333333333333333e-02;
 if( run == 0 ) {
 for (i = 0; i < 6; ++i)
 {

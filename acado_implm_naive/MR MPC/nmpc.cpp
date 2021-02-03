@@ -86,7 +86,7 @@ void mexFunction( int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[] )
     acadodata_f3 << xxd;
     acadodata_f3 << xyd;
     acadodata_f3 << xzd;
-    OCP ocp1(0, 0.5, 10);
+    OCP ocp1(0, 0.6, 6);
     ocp1.minimizeLSQ(acadodata_M1, acadodata_f2);
     ocp1.minimizeLSQEndTerm(acadodata_M2, acadodata_f3);
     DifferentialEquation acadodata_f4;
@@ -116,7 +116,7 @@ void mexFunction( int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[] )
     if(options_flag != 0) mexErrMsgTxt("ACADO export failed when setting the following option: LEVENBERG_MARQUARDT");
     options_flag = ExportModule2.set( INTEGRATOR_TYPE, INT_BDF );
     if(options_flag != 0) mexErrMsgTxt("ACADO export failed when setting the following option: INTEGRATOR_TYPE");
-    options_flag = ExportModule2.set( NUM_INTEGRATOR_STEPS, 30 );
+    options_flag = ExportModule2.set( NUM_INTEGRATOR_STEPS, 18 );
     if(options_flag != 0) mexErrMsgTxt("ACADO export failed when setting the following option: NUM_INTEGRATOR_STEPS");
     options_flag = ExportModule2.set( QP_SOLVER, QP_QPOASES );
     if(options_flag != 0) mexErrMsgTxt("ACADO export failed when setting the following option: QP_SOLVER");

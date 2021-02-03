@@ -4,7 +4,7 @@ clc
 clear all
 
 %% set case to be simulated
-delta = 0.05; % adjust for hours (0.15 is one hour) (0.01 = 4 minutes)
+delta = 0.1; % adjust for hours (0.15 is one hour) (0.01 = 4 minutes)
 % delta_b = delta/2;
 saturation = 0; % set to one to incorporate saturation on the control.
 sat_constraint = 0; % set to one to include saturation as as a constraint in MPC formulation
@@ -18,7 +18,7 @@ else
     satValue = inf;
 end
 
-r = 0; % control penalty if consistent penalty on three controls is required
+r = 0.1; % control penalty if consistent penalty on three controls is required
 
 %% models parameters and init conditions
 L2 = 1.1556;

@@ -49,23 +49,23 @@ e   =  0.0549;  % EM rotating system e
 
 % satellite init position and velocity
 u0 = [0;0;0];
-x0 = [L2;0;0;0;0;0];
+% x0 = [L2;0;0;0;0;0];
 % x0 = [1;0;0;0;0;0]; % starting near Moon surface
 %uncomment the following lines if you want to start near the orbit or near
 %the moon surface
 % insertion_error = 0;
-% insertion_error = -0.3; 
-% Seq = [L2 + insertion_error;0;0;0;0;0];   
-% 
-% ho1 = [(-k*(1-c(1)+Omega^2)/(2*Omega))*cos(0);
-%        k*sin(0);
-%        k*cos(0)];
-%    
-% diffho1 = [(k*(1-c(1)+Omega^2)/2)*sin(Omega*0);
-%            Omega*k*cos(Omega*0);
-%            -Omega_z*k*sin(Omega_z*0)];
-%       
-% x0 = Seq + [ho1;diffho1];
+insertion_error = -0.3; 
+Seq = [L2 + insertion_error;0;0;0;0;0];   
+
+ho1 = [(-k*(1-c(1)+Omega^2)/(2*Omega))*cos(0);
+       k*sin(0);
+       k*cos(0)];
+   
+diffho1 = [(k*(1-c(1)+Omega^2)/2)*sin(Omega*0);
+           Omega*k*cos(Omega*0);
+           -Omega_z*k*sin(Omega_z*0)];
+      
+x0 = Seq + [ho1;diffho1];
 
 % feedback linearization and pole placement if activated
 pole = [-2 -1.5 -3 -2.5 -3.1 -2.6];

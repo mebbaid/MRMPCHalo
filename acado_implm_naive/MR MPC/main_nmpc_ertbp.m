@@ -2,7 +2,7 @@ clc;
 clear all; close all;
 
 
-perturbed = 0;  % simulate perturbations
+perturbed = 1;  % simulate perturbations
 
 if perturbed == 1
     e   =  0.0549;  % EM rotating system e
@@ -11,7 +11,7 @@ else
     
 end
 %% PARAMETERS
-Ts = 0.05;
+Ts = 0.1;
 EXPORT = 1;
 mu = 0.012149;
 L2 = 1.556;
@@ -85,7 +85,7 @@ end
 
 %% MPCexport
 acadoSet('problemname', 'nmpc');
-Np = 10;
+Np = 6;
 ocp = acado.OCP( 0.0, Np*Ts, Np );
 h = [xx xy xz xxd xyd xzd ux uy uz];
 hN = [xx xy xz xxd xyd xzd]; % terminal penalty
