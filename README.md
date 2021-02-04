@@ -13,7 +13,7 @@ orbit.
 For modelling the equations of motion of a satellite/space-craft in the Earth moon system, we opt for the following representation
 
 
-![the model](/MR MPC simulink implm/image/the_model.pdf)
+![the model](the_model.pdf)
 
 
 Additionally, a simplified model of the solar radiation pressure effect on the position of the space-craft is model, so getting a more realistic model. To this end, the
