@@ -12,11 +12,7 @@ orbit.
 
 For modelling the equations of motion of a satellite/space-craft in the Earth moon system, we opt for the following representation
 
-<object data="https://github.com/mebbaid/MRMPCHalo/blob/main/the_model.pdf" type="application/pdf" width="700px" height="700px">
-    <embed src="https://github.com/mebbaid/MRMPCHalo/blob/main/the_model.pdf">
-        <p>This browser does not support PDFs. Please download the PDF to view it: <a href="https://github.com/mebbaid/MRMPCHalo/blob/main/the_model.pdf">Download PDF</a>.</p>
-    </embed>
-</object>
+![model](/MRMPCHalo/MR MPC simulink implm/image/the_mode-1.png)
 
 
 
