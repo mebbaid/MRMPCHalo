@@ -24,6 +24,7 @@ following section highlights the simulation mode coupled with the proposed plann
 
 For the simulation purposes, the following scheme serves to illustrate the general diagram, in a very rough way.
 
+![simulation](https://github.com/mebbaid/MRMPCHalo/blob/main/MR%20MPC%20simulink%20implm/image/simulation_scheme.png)
 
 
 # :page_facing_up: Dependencies
