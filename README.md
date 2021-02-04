@@ -27,8 +27,22 @@ For the simulation purposes, the following scheme serves to illustrate the gener
 ![simulation](https://github.com/mebbaid/MRMPCHalo/blob/main/MR%20MPC%20simulink%20implm/image/simulation_scheme.png)
 
 
+The proposed control scheme is then contrasted to several control schemes from the literature (check the individual folders).
+
+
+### Note on NMPC implementatoin
+
+To solve the nmpc problem, 
+
 # :page_facing_up: Dependencies
-1. **CASADI and IPOPT:** Install the CASADI and IPOPT if you intend to use different solver, by default we use Matlab's ```fmincon``` [CASADI](https://github.com/casadi/casadi/wiki/InstallationInstructions)
+
+By default, we use the Matlab's simulink toolbox based nmpc solver, as well as an nmpc implementaion based on ```fmincon```. However, to study the issue of real time implementation,
+and computational aspects, several other options are available, in particular:
+
+1. **ACADO:** for the real-time-iteration nmpc implementation, install acado by following the instructions [here](https://github.com/acado/acado).
+in particular the Matlan interface is needed, together with a suitable cpp compiler.
+2. **CASADI and IPOPT:** Install the CASADI and IPOPT if you intend to use Interior point 
+[CASADI](https://github.com/casadi/casadi/wiki/InstallationInstructions) and compare it to the RTI implementation. STILL UNDER CONSTRUCTION~~~~
 
 
 # :hammer: Run the simulation
@@ -36,3 +50,6 @@ For the simulation purposes, the following scheme serves to illustrate the gener
 
 You can simply run ```initMRMPCHalo.m```. At the start of this init file, most relevant parameters to the simulation are present, adjust for different
 scenarios e.g. primaries eccentricity, thrust saturation limits, different weights ...etc here. 
+
+You can investiage different controllers by browsing to the approperiate directory: e.g. feedback linearization and nonlinear regulation. There you can find an implementation
+of those two controllers discussed in the work by ```Paolo```.
