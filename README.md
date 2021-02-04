@@ -12,7 +12,7 @@ orbit.
 
 For modelling the equations of motion of a satellite/space-craft in the Earth moon system, we opt for the following representation
 
-![alt text](https://github.com/mebbaid/MRMPCHalo/blob/main/MR%20MPC%20simulink%20implm/image/the_model.pdf)
+![](https://github.com/mebbaid/MRMPCHalo/blob/main/MR%20MPC%20simulink%20implm/image/the_model.pdf)
 
 Additionally, a simplified model of the solar radiation pressure effect on the position of the space-craft is model, so getting a more realistic model. To this end, the
 following section highlights the simulation mode coupled with the proposed planning and control scheme.
@@ -20,7 +20,7 @@ following section highlights the simulation mode coupled with the proposed plann
 ## The simulation set-up
 
 
-![alt text](https://github.com/mebbaid/MRMPCHalo/blob/main/image/Header.JPG)
+![](https://github.com/mebbaid/MRMPCHalo/blob/main/image/Header.JPG)
 
 # :page_facing_up: Dependencies
 1. **CASADI and IPOPT:** Install the CASADI and IPOPT if you intend to use different solver, by default we use Matlab's ```fmincon``` [CASADI](https://github.com/casadi/casadi/wiki/InstallationInstructions)
