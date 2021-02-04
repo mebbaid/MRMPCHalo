@@ -9,7 +9,7 @@
 This repo tests the recently proposed multirate planning and nmpc control scheme on the problem of translunar station-keeping for a _quasi_ halo 
 orbit.
 
-## The mode
+## The model
 
 For modelling the equations of motion of a satellite/space-craft in the Earth moon system, we opt for the following representation
 
