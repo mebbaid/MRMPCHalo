@@ -137,8 +137,8 @@ input.u = Uref;
 input.y = [repmat(Xref,Np,1) Uref];
 % input.y = [xr(:,2:end)' Uref];
 input.yN = xr';
-input.W = diag([10 10 10 1 1 1 0 0 0]);
-input.WN = diag([10 10 10 1 1 1]); 
+input.W = diag([100 100 100 1 1 1 0 0 0]);
+input.WN = diag([10 10 10 10 10 10]); 
 input.shifting.strategy = 1;
 
 % SIMULATION LOOP
