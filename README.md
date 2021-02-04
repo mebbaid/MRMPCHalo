@@ -17,7 +17,7 @@ For modelling the equations of motion of a satellite/space-craft in the Earth mo
 
 
 
-Additionally, a simplified model of the solar radiation pressure effect on the position of the space-craft is model, so getting a more realistic model. To this end, the
+Additionally, a simplified model of the solar radiation pressure effect on the position of the space-craft is added, so getting a more realistic model. To this end, the
 following section highlights the simulation mode coupled with the proposed planning and control scheme.
 
 ## The simulation set-up
