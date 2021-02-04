@@ -46,7 +46,7 @@ By default, we use the Matlab's simulink toolbox based nmpc solver, as well as a
 and computational aspects, several other options are available, in particular:
 
 1. **ACADO:** for the real-time-iteration nmpc implementation, install acado by following the instructions [here](https://github.com/acado/acado).
-in particular the Matlan interface is needed, together with a suitable cpp compiler.
+in particular the Matlab interface is needed, together with a suitable cpp compiler.
 2. **CASADI and IPOPT:** Install the CASADI and IPOPT if you intend to use Interior point 
 [CASADI](https://github.com/casadi/casadi/wiki/InstallationInstructions) and compare it to the RTI implementation. STILL UNDER CONSTRUCTION~~~~
 
