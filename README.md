@@ -22,8 +22,9 @@ following section highlights the simulation mode coupled with the proposed plann
 
 ## The simulation set-up
 
+For the simulation purposes, the following scheme serves to illustrate the general diagram, in a very rough way.
 
-![gui](Header.JPG)
+
 
 # :page_facing_up: Dependencies
 1. **CASADI and IPOPT:** Install the CASADI and IPOPT if you intend to use different solver, by default we use Matlab's ```fmincon``` [CASADI](https://github.com/casadi/casadi/wiki/InstallationInstructions)
