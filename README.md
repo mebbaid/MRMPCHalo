@@ -3,7 +3,7 @@
 # Overview
  - [:orange_book: The general idea](#orange_book-some-theory-behind-the-code)
  - [:page_facing_up: Dependencies](#page_facing_up-dependencies)
- - [:running: running](#running-running the simulations)
+ - [:running: running](#running-How-to-test-the-code)
 
 # :orange_book: The general idea
 This repo tests the recently proposed multirate planning and nmpc control scheme on the problem of translunar station-keeping for a _quasi_ halo 
