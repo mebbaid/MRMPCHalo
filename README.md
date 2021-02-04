@@ -12,7 +12,7 @@ orbit.
 
 For modelling the equations of motion of a satellite/space-craft in the Earth moon system, we opt for the following representation
 
-![model](/MRMPCHalo/MR MPC simulink implm/image/the_mode-1.png)
+![model](https://github.com/mebbaid/MRMPCHalo/blob/main/MR%20MPC%20simulink%20implm/image/the_model-1.png)
 
 
 
