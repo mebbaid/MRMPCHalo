@@ -32,7 +32,12 @@ The proposed control scheme is then contrasted to several control schemes from t
 
 ### Note on NMPC implementatoin
 
-To solve the nmpc problem, 
+The nmpc solves the following problem:
+UNDER CONSTRUCTION ~~~~~~~~~~
+
+Indeed, several options based on different nmpc solvers are available to the user (e.g. ```fmincon``` , ```QPOASIS``` and ```acado```, ```IPOPT``` and ```CASADI``` ..etc) together both in ```matlab/simulink``` and ```C/C++``` UNDERCONSTRUCTION~~~~~~~~~~~~
+
+
 
 # :page_facing_up: Dependencies
 
@@ -52,4 +57,14 @@ You can simply run ```initMRMPCHalo.m```. At the start of this init file, most r
 scenarios e.g. primaries eccentricity, thrust saturation limits, different weights ...etc here. 
 
 You can investiage different controllers by browsing to the approperiate directory: e.g. feedback linearization and nonlinear regulation. There you can find an implementation
-of those two controllers discussed in the work by ```Paolo```.
+of those two controllers discussed in the work by ```Paolo```.  UNDERCONSTRUCTION~~~~~~~~~~`
+
+
+## LINUX/MAC OS
+
+UNDERCONSTRUCTION~~~~~~~~~~~~~~~~~~~
+
+
+# :running: How to test the code
+You can follows the same instructions of the simulations section discussed on the manuscript ```Elobaid```  UNDER CONSTRUCTION ~~~~~~~~~~~~~
+
