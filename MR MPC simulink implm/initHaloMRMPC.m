@@ -48,7 +48,7 @@ e   =  0.0549;  % EM rotating system e
 % srp parameters
 Gsc = 1.3608 ; % approx kw
 sped = 300000; % approx m/s
-zeta = pi/2;   % prep. on the space-craft
+zeta = 0.9252 ;   % prep. on the space-craft
 
 
 % satellite init position and velocity
