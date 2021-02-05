@@ -7,7 +7,7 @@ delta = 0.1; % adjust for hours (0.15 is one hour) (0.01 = 4 minutes)
 saturation = 0; % set to one to incorporate saturation on the control.
 sat_constraint = 0; % set to one to include saturation as as a constraint in MPC formulation
 disturbance = 1;  % set to one to incoporate disturbances
-srp         = 0; % solar radiation pressure
+srp         = 1; % solar radiation pressure
 emulation =delta; % put emulation = delta to simulate emulated control for FL
 delay = 0; % put to one to include effect of delay
 if saturation == 1
@@ -47,6 +47,11 @@ phi = 0;
 e   =  0.0549;  % EM rotating system e
 % e   = 0;
 
+% srp parameters
+Gsc = 1.3608 ; % approx kw
+sped = 300000; % approx m/s
+zeta = 0.9252 ;   % prep. on the space-craft
+
 % satellite init position and velocity
 u0 = [0;0;0];
 % x0 = [L2;0;0;0;0;0];
@@ -54,7 +59,7 @@ u0 = [0;0;0];
 %uncomment the following lines if you want to start near the orbit or near
 %the moon surface
 % insertion_error = 0;
-insertion_error = -0.3; 
+insertion_error = -0.1; 
 Seq = [L2 + insertion_error;0;0;0;0;0];   
 
 ho1 = [(-k*(1-c(1)+Omega^2)/(2*Omega))*cos(0);

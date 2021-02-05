@@ -4,7 +4,7 @@ clear all; close all;
 
 %% PARAMETERS
 Ts = 0.05;
-EXPORT = 0;
+EXPORT = 1;
 mu = 0.012149;
 L2 = 1.556;
 insertion_error = 0; 
