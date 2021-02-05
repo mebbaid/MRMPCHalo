@@ -9,7 +9,7 @@ delta = 0.1; % adjust for hours (0.15 is one hour) (0.01 = 4 minutes)
 saturation = 0; % set to one to incorporate saturation on the control.
 sat_constraint = 0; % set to one to include saturation as as a constraint in MPC formulation
 disturbance = 1;  % set to one to incoporate disturbances
-srp         = 0; % 
+srp         = 1; % 
 emulation = delta; % put emulation = delta to simulate emulated control for FL
 delay = 0; % put to one to include effect of delay
 if saturation == 1
@@ -44,6 +44,11 @@ b(2) = 5/2;
 phi = 0;
 e   =  0.0549;  % EM rotating system e
 % e   = 0;
+
+% srp parameters
+Gsc = 1.3608 ; % approx kw
+sped = 300000; % approx m/s
+zeta = pi/2;   % prep. on the space-craft
 
 
 % satellite init position and velocity
