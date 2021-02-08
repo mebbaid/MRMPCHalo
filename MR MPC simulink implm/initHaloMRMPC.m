@@ -89,7 +89,7 @@ nc = 4;
 Ts = delta;
 timescale = 6.5; % scaling factor such that each s in simulation is an hour
 distanceScale = 384400; % distance between two primaries
-errorScale = distanceScale/100;  % error in km
+errorScale = distanceScale/1000;  % error in km
 accScale = 1000; % accelarations in m/s^2
 options = optimoptions('fmincon','Algorithm','sqp');
 % Nonlinear MPC controller
@@ -129,8 +129,7 @@ ysr = ans.ysr*distanceScale;
 zmpc = ans.z;
 vmpc = ans.v;
 umpc = ans.u;
-empc = ans.error*errorScale;
-e_rms_mpc = ans.e_rms*errorScale;
+e_rms_mpc = ans.e_rms;
 norm_umpc = ans.DeltaV;
 mrmpcstatus = ans.mrmpcstatus;
 % veloIncr_mrmpc = sum(deltaVmpc(round(simTime*timescale/2)))/21;
@@ -167,28 +166,18 @@ plot(t*timescale, umpc(:,1), 'k', 'LineWidth', 1.5);
 hold on; grid on;
 plot(t*timescale, umpc(:,2), 'r', 'LineWidth', 1.5);
 plot(t*timescale, umpc(:,3), 'b', 'LineWidth', 1.5);
-l = legend('$u_1(t)$', '$u_2(t)$', '$u_3(t)$');
+l = legend('MR MPC $u_1(t)$', 'MR MPC $u_2(t)$', 'MR MPC $u_3(t)$');
 set(l,'Interpreter','Latex');
 l = xlabel('Time (h)'); 
 l.FontSize = 18;
 
-subplot(2,2,3);
-l = title('Root mean square error');
-set(l,'Interpreter','Latex');
-plot(t*timescale, e_rms_mpc, 'r', 'LineWidth', 1.5);
-hold on; grid on;
-l = legend('MR MPC $e_{RMS}(t)$ km');
-set(l,'Interpreter','Latex');
-l = xlabel('Time (h)'); 
-l.FontSize = 18;
-hold off;
 
 subplot(2,2,3);
-l = title('Root mean square error');
+l = title('Norm of the error');
 set(l,'Interpreter','Latex');
 plot(t*timescale, e_rms_mpc, 'r', 'LineWidth', 1.5);
 hold on; grid on;
-l = legend('MR MPC $e_{RMS}(t)$ km');
+l = legend('MR MPC $\|e_{RMS}(t)\|$ km');
 set(l,'Interpreter','Latex');
 l = xlabel('Time (h)'); 
 l.FontSize = 18;
