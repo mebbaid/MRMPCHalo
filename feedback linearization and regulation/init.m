@@ -6,8 +6,8 @@ delta = 0.1; % adjust for hours (0.15 is one hour) (0.01 = 4 minutes)
 % delta_b = delta/2;
 saturation = 0; % set to one to incorporate saturation on the control.
 sat_constraint = 0; % set to one to include saturation as as a constraint in MPC formulation
-disturbance = 1;  % set to one to incoporate disturbances
-srp         = 1; % solar radiation pressure
+disturbance = 0;  % set to one to incoporate disturbances
+srp         = 0; % solar radiation pressure
 emulation = delta; % put emulation = delta to simulate emulated control for FL
 delay = 0; % put to one to include effect of delay
 if saturation == 1
@@ -103,60 +103,28 @@ yreg = ans.yreg*distanceScale;
 zreg = ans.zreg;
 ureg = ans.ureg;
 
-efl = ans.error*errorScale;
-e_rms_fl = ans.e_rms*errorScale;
-deltaVfl = ans.DeltaV;
+e_rms_fl = ans.e_rms;
+e_rms_reg = ans.e_rms_reg;
 
+norm_ufl = ans.DeltaV;
+norm_ureg = ans.DeltaV_reg;
 
 
 figure('Name','Feedback linearization');
 
-subplot(3,2,1);
-l = title('x-z plot');
+subplot(2,2,1);
+l = title('3D plot of trajectory under FL');
 set(l,'Interpreter','Latex');
-plot(reffl(:,1)*distanceScale, reffl(:,3)*distanceScale, 'k', 'LineWidth', 1.5);
+plot3(reffl(:,1)*distanceScale, reffl(:,2)*distanceScale, reffl(:,3)*distanceScale, 'k', 'LineWidth', 1.5);
 hold on; grid on;
-plot(yfl(:,1), yfl(:,3), 'r', 'LineWidth', 1.5);
-l = legend('$x_r$-$z_r$ Nominal reference', '$x$-$z$ FL actual trajectory');
+plot3(yfl(:,1),yfl(:,2), yfl(:,3), 'r', 'LineWidth', 1.5);
+l = legend('$x(t), y(t), z(t)$- Nominal reference','$x(t), y(t), z(t)$- Feedback linearization trajectory', 'L2 point' );
 set(l,'Interpreter','Latex');
 l = xlabel('y-z plot (km)'); 
 l.FontSize = 18;
 
 
-subplot(3,2,2)
-l = title('y-z plot');
-set(l,'Interpreter','Latex');
-plot(reffl(:,2)*distanceScale, reffl(:,3)*distanceScale, 'k', 'LineWidth', 1.5);
-hold on; grid on;
-plot(yfl(:,2), yfl(:,3), 'r', 'LineWidth', 1.5);
-l = legend('$y_r$-$z_r$ Nominal reference', '$y$-$z$ FL actual trajectory');
-set(l,'Interpreter','Latex');
-l = xlabel('y-z plot (km)'); 
-l.FontSize = 18;
-
-subplot(3,2,3);
-l = title('x-y plot');
-set(l,'Interpreter','Latex');
-plot(reffl(:,1)*distanceScale, -reffl(:,2)*distanceScale, 'k', 'LineWidth', 1.5);
-hold on; grid on;
-plot(yfl(:,1), -yfl(:,2), 'r', 'LineWidth', 1.5);
-l = legend('$x_r$-$y_r$ Nominal reference', '$x$-$-y$ FL actual trajectory');
-set(l,'Interpreter','Latex');
-l = xlabel('x-y plot (km)'); 
-l.FontSize = 18;
-
-subplot(3,2,4);
-l = title('x-z plot');
-set(l,'Interpreter','Latex');
-plot(reffl(:,1)*distanceScale, reffl(:,3)*distanceScale, 'k', 'LineWidth', 1.5);
-hold on; grid on;
-plot(yfl(:,1), yfl(:,3), 'r', 'LineWidth', 1.5);
-l = legend('$x_r$-$z_r$ Nominal reference', '$x$-$z$ FL actual trajectory ');
-set(l,'Interpreter','Latex');
-l = xlabel('x-z plot (km)'); 
-l.FontSize = 18;
-
-subplot(3,2,5);
+subplot(2,2,2)
 l = title('Controls');
 set(l,'Interpreter','Latex');
 plot(t*timescale, ufl(:,1), 'k', 'LineWidth', 1.5);
@@ -168,93 +136,74 @@ set(l,'Interpreter','Latex');
 l = xlabel('Time (h)'); 
 l.FontSize = 18;
 
-
-subplot(3,2,6);
-l = title('Primer disturbances');
+subplot(2,2,3);
+l = title('Norm of the error');
 set(l,'Interpreter','Latex');
-plot(t*timescale, zfl(:,1), 'k', 'LineWidth', 1.5);
+plot(t*timescale, e_rms_fl, 'r', 'LineWidth', 1.5);
 hold on; grid on;
-plot(t*timescale, zfl(:,2), 'r', 'LineWidth', 1.5);
-plot(t*timescale, zfl(:,3), 'b', 'LineWidth', 1.5);
-plot(t*timescale, zfl(:,4), 'g', 'LineWidth', 1.5);
-l = legend('$z_1(t)$', '$z_2(t)$', '$z_3(t)$','$z_4(t)$');
+l = legend('Feedback linearization $\|e(t)\|$ km');
 set(l,'Interpreter','Latex');
 l = xlabel('Time (h)'); 
 l.FontSize = 18;
+hold off;
 
 
-
+subplot(2,2,4);
+l = title('Control effort magnitutde');
+set(l,'Interpreter','Latex');
+plot(t*timescale, norm_ufl, 'k', 'LineWidth', 1.5);
+hold on; grid on;
+l = legend('Feedback linearization $\|u\|(t)$');
+set(l,'Interpreter','Latex');
+l = xlabel('Time (h)'); 
+l.FontSize = 18;
+hold off;
 
 
 figure('Name','Nonlinear regulation');
 
-subplot(3,2,1);
-l = title('x-z plot');
+subplot(2,2,1);
+l = title('3D plot of trajectory under regulation');
 set(l,'Interpreter','Latex');
-plot(refreg(:,1)*distanceScale, refreg(:,3)*distanceScale, 'k', 'LineWidth', 1.5);
+plot3(refreg(:,1)*distanceScale, refreg(:,2)*distanceScale, refreg(:,3)*distanceScale, 'k', 'LineWidth', 1.5);
 hold on; grid on;
-plot(yreg(:,1), yreg(:,3), 'r', 'LineWidth', 1.5);
-l = legend('$x_r$-$z_r$ Nominal reference', '$x$-$z$ FL actual trajectory');
+plot3(yreg(:,1),yreg(:,2), yreg(:,3), 'r', 'LineWidth', 1.5);
+l = legend('$x(t), y(t), z(t)$- Nominal reference','$x(t), y(t), z(t)$- Nonlinear regulaiton trajectory', 'L2 point' );
 set(l,'Interpreter','Latex');
 l = xlabel('y-z plot (km)'); 
 l.FontSize = 18;
 
-
-subplot(3,2,2)
-l = title('y-z plot');
-set(l,'Interpreter','Latex');
-plot(refreg(:,2)*distanceScale, refreg(:,3)*distanceScale, 'k', 'LineWidth', 1.5);
-hold on; grid on;
-plot(yreg(:,2), yreg(:,3), 'r', 'LineWidth', 1.5);
-l = legend('$y_r$-$z_r$ Nominal reference', '$y$-$z$ FL actual trajectory');
-set(l,'Interpreter','Latex');
-l = xlabel('y-z plot (km)'); 
-l.FontSize = 18;
-
-subplot(3,2,3);
-l = title('x-y plot');
-set(l,'Interpreter','Latex');
-plot(refreg(:,1)*distanceScale, -refreg(:,2)*distanceScale, 'k', 'LineWidth', 1.5);
-hold on; grid on;
-plot(yreg(:,1), -yreg(:,2), 'r', 'LineWidth', 1.5);
-l = legend('$x_r$-$y_r$ Nominal reference', '$x$-$-y$ FL actual trajectory');
-set(l,'Interpreter','Latex');
-l = xlabel('x-y plot (km)'); 
-l.FontSize = 18;
-
-subplot(3,2,4);
-l = title('x-z plot');
-set(l,'Interpreter','Latex');
-plot(refreg(:,1)*distanceScale, refreg(:,3)*distanceScale, 'k', 'LineWidth', 1.5);
-hold on; grid on;
-plot(yreg(:,1), yreg(:,3), 'r', 'LineWidth', 1.5);
-l = legend('$x_r$-$z_r$ Nominal reference', '$x$-$z$ FL actual trajectory ');
-set(l,'Interpreter','Latex');
-l = xlabel('x-z plot (km)'); 
-l.FontSize = 18;
-
-subplot(3,2,5);
+subplot(2,2,2)
 l = title('Controls');
 set(l,'Interpreter','Latex');
 plot(t*timescale, ureg(:,1), 'k', 'LineWidth', 1.5);
 hold on; grid on;
 plot(t*timescale, ureg(:,2), 'r', 'LineWidth', 1.5);
 plot(t*timescale, ureg(:,3), 'b', 'LineWidth', 1.5);
-l = legend('$u_1(t)$', '$u_2(t)$', '$u_3(t)$');
+l = legend('Nonlinear regulation $u_1(t)$', 'Nonlinear regulation $u_2(t)$', 'Nonlinear regulation $u_3(t)$');
 set(l,'Interpreter','Latex');
 l = xlabel('Time (h)'); 
 l.FontSize = 18;
 
-
-subplot(3,2,6);
-l = title('Primer disturbances');
+subplot(2,2,3);
+l = title('Norm of the error');
 set(l,'Interpreter','Latex');
-plot(t*timescale, zreg(:,1), 'k', 'LineWidth', 1.5);
+plot(t*timescale, e_rms_reg, 'r', 'LineWidth', 1.5);
 hold on; grid on;
-plot(t*timescale, zreg(:,2), 'r', 'LineWidth', 1.5);
-plot(t*timescale, zreg(:,3), 'b', 'LineWidth', 1.5);
-plot(t*timescale, zreg(:,4), 'g', 'LineWidth', 1.5);
-l = legend('$z_1(t)$', '$z_2(t)$', '$z_3(t)$','$z_4(t)$');
+l = legend('Nonlinear regulation $\|e(t)\|$ km');
 set(l,'Interpreter','Latex');
 l = xlabel('Time (h)'); 
 l.FontSize = 18;
+hold off;
+
+
+subplot(2,2,4);
+l = title('Control effort magnitutde');
+set(l,'Interpreter','Latex');
+plot(t*timescale, norm_ureg, 'k', 'LineWidth', 1.5);
+hold on; grid on;
+l = legend('Nonlinear regulation $\|u\|(t)$');
+set(l,'Interpreter','Latex');
+l = xlabel('Time (h)'); 
+l.FontSize = 18;
+hold off;

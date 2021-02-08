@@ -177,7 +177,7 @@ l = title('Norm of the error');
 set(l,'Interpreter','Latex');
 plot(t*timescale, e_rms_mpc, 'r', 'LineWidth', 1.5);
 hold on; grid on;
-l = legend('MR MPC $\|e_{RMS}(t)\|$ km');
+l = legend('MR MPC $\|e(t)\|$ km');
 set(l,'Interpreter','Latex');
 l = xlabel('Time (h)'); 
 l.FontSize = 18;

@@ -134,7 +134,7 @@ t =0:delta:simTime;
 
 figure('Name','MPC using polyn, pred. model');
 
-subplot(3,2,1);
+subplot(2,2,1);
 l = title('Three dimensional plot');
 set(l,'Interpreter','Latex');
 plot3(xtraj(1,:),xtraj(2,:), xtraj(3,:), 'r', 'LineWidth', 1.5);
@@ -151,41 +151,7 @@ set(l,'Interpreter','Latex');
 l = legend('$x(t), y(t), z(t)$- MPC trajectory','$x(t), y(t), z(t)$- Nominal trajectory', 'L2 point' );
 
 
-subplot(3,2,2)
-set(l,'Interpreter','Latex');
-l = title('y-z plot');
-set(l,'Interpreter','Latex');
-plot(xtraj(2,:), xtraj(3,:), 'r', 'LineWidth', 1.5);
-hold on; grid on;
-plot(ref(2,:), ref(3,:), 'b', 'LineWidth', 1.5);
-l = legend('$y$-$z$ MPC actual trajectory','$y$-$z$ Nominal ref');
-set(l,'Interpreter','Latex');
-l = xlabel('y-z plot (km)'); 
-l.FontSize = 18;
-
-subplot(3,2,3);
-l = title('x-y plot');
-set(l,'Interpreter','Latex');
-plot(xtraj(1,:), -xtraj(2,:), 'r', 'LineWidth', 1.5);
-hold on; grid on;
-plot(ref(1,:), -ref(2,:), 'b', 'LineWidth', 1.5);
-l = legend( '$x$-$-y$ MPC actual trajectory','$x$-$-y$ Nominal ref');
-set(l,'Interpreter','Latex');
-l = xlabel('x-y plot (km)'); 
-l.FontSize = 18;
-
-subplot(3,2,4);
-l = title('x-z plot');
-set(l,'Interpreter','Latex');
-plot(xtraj(1,:), xtraj(3,:), 'r', 'LineWidth', 1.5);
-hold on; grid on;
-plot(ref(1,:), ref(3,:), 'b', 'LineWidth', 1.5);
-l = legend('$x$-$z$ MPC actual trajectory ','$x$-$z$ Nominal ref' );
-set(l,'Interpreter','Latex');
-l = xlabel('x-z plot (km)'); 
-l.FontSize = 18;
-
-subplot(3,2,5);
+subplot(2,2,2)
 l = title('Controls');
 set(l,'Interpreter','Latex');
 plot(t, utraj(1,:), 'k', 'LineWidth', 1.5);
@@ -198,16 +164,25 @@ l = xlabel('Time (h)');
 l.FontSize = 18;
 
 
-subplot(3,2,6);
-l = title('Primer disturbances');
+subplot(2,2,3);
+l = title('Norm of the error');
 set(l,'Interpreter','Latex');
-plot(t, ztraj(1,:), 'k', 'LineWidth', 1.5);
+plot(t, erms, 'r', 'LineWidth', 1.5);
 hold on; grid on;
-plot(t, ztraj(2,:), 'r', 'LineWidth', 1.5);
-plot(t, ztraj(3,:), 'b', 'LineWidth', 1.5);
-plot(t, ztraj(4,:), 'g', 'LineWidth', 1.5);
-l = legend('$z_1(t)$', '$z_2(t)$', '$z_3(t)$','$z_4(t)$');
+l = legend('NMPC fmincon $\|e(t)\|$ km');
 set(l,'Interpreter','Latex');
 l = xlabel('Time (h)'); 
 l.FontSize = 18;
+hold off;
 
+
+subplot(2,2,4);
+l = title('Control effort magnitutde');
+set(l,'Interpreter','Latex');
+plot(t, deltaVpoly, 'k', 'LineWidth', 1.5);
+hold on; grid on;
+l = legend('NMPC fmincon $\|u\|(t)$');
+set(l,'Interpreter','Latex');
+l = xlabel('Time (h)'); 
+l.FontSize = 18;
+hold off;
