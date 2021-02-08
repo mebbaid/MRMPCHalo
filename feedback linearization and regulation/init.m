@@ -19,7 +19,7 @@ end
 Ts = delta;
 timescale = 6.5; % scaling factor such that each s in simulation is an hour
 distanceScale = 384400; % distance between two primaries
-errorScale = distanceScale/100;  % error in km
+errorScale = distanceScale/1000;  % error in km
 accScale = 1000; % accelarations in m/s^2
 
 %% models parameters and init conditions
@@ -139,7 +139,7 @@ l.FontSize = 18;
 subplot(2,2,3);
 l = title('Norm of the error');
 set(l,'Interpreter','Latex');
-plot(t*timescale, e_rms_fl, 'r', 'LineWidth', 1.5);
+plot(t*timescale, e_rms_fl*distanceScale, 'r', 'LineWidth', 1.5);
 hold on; grid on;
 l = legend('Feedback linearization $\|e(t)\|$ km');
 set(l,'Interpreter','Latex');
@@ -188,7 +188,7 @@ l.FontSize = 18;
 subplot(2,2,3);
 l = title('Norm of the error');
 set(l,'Interpreter','Latex');
-plot(t*timescale, e_rms_reg, 'r', 'LineWidth', 1.5);
+plot(t*timescale, e_rms_reg*distanceScale, 'r', 'LineWidth', 1.5);
 hold on; grid on;
 l = legend('Nonlinear regulation $\|e(t)\|$ km');
 set(l,'Interpreter','Latex');

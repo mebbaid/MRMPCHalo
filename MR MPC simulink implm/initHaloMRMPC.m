@@ -4,7 +4,7 @@ clc
 clear all
 
 %% set case to be simulated
-delta = 0.05; % adjust for hours (0.15 is one hour) (0.01 = 4 minutes)
+delta = 0.1; % adjust for hours (0.15 is one hour) (0.01 = 4 minutes)
 % delta_b = delta/2;
 saturation = 0; % set to one to incorporate saturation on the control.
 sat_constraint = 0; % set to one to include saturation as as a constraint in MPC formulation
@@ -18,7 +18,7 @@ else
     satValue = inf;
 end
 
-r = 0.1; % control penalty if consistent penalty on three controls is required
+r = 0.0; % control penalty if consistent penalty on three controls is required
 
 %% models parameters and init conditions
 L2 = 1.1556;
@@ -129,7 +129,7 @@ ysr = ans.ysr*distanceScale;
 zmpc = ans.z;
 vmpc = ans.v;
 umpc = ans.u;
-e_rms_mpc = ans.e_rms;
+e_rms_mpc = ans.e_rms*distanceScale;
 norm_umpc = ans.DeltaV;
 mrmpcstatus = ans.mrmpcstatus;
 % veloIncr_mrmpc = sum(deltaVmpc(round(simTime*timescale/2)))/21;
@@ -142,10 +142,10 @@ figure('Name','MR MPC');
 subplot(2,2,1);
 l = title('Proposed MR MPC');
 set(l,'Interpreter','Latex');
-plot3(ympc(:,1),ympc(:,2), ympc(:,3), 'r', 'LineWidth', 3);
+plot3(ympc(:,1),ympc(:,2), ympc(:,3), 'r', 'LineWidth', 1.5);
 hold on; grid on;
-% plot3(refmpc(:,1)*distanceScale,refmpc(:,2)*distanceScale, refmpc(:,3)*distanceScale, 'b--', 'LineWidth', 1.5);
-plot3(n_refmpc(:,1)*distanceScale,n_refmpc(:,2)*distanceScale, n_refmpc(:,3)*distanceScale, 'k', 'LineWidth', 3);
+plot3(refmpc(:,1)*distanceScale,refmpc(:,2)*distanceScale, refmpc(:,3)*distanceScale, 'b--', 'LineWidth', 1.5);
+plot3(n_refmpc(:,1)*distanceScale,n_refmpc(:,2)*distanceScale, n_refmpc(:,3)*distanceScale, 'k', 'LineWidth', 1.5);
 scatter3(L2*distanceScale,0,0,'b','diamond');
 % plot3(xe1, xe2, xe3, 'k', 'LineWidth', 2);
 l = xlabel('$x$');
@@ -154,7 +154,7 @@ l = ylabel('$y$');
 set(l,'Interpreter','Latex');
 l = zlabel('$z$');
 set(l,'Interpreter','Latex');
-l = legend('$x(t), y(t), z(t)$- MR MPC trajectory','$x(t), y(t), z(t)$- nominal reference', 'L2 point' );
+l = legend('$x(t), y(t), z(t)$- MR MPC trajectory','$x(t), y(t), z(t)$- Planned trajectory','$x(t), y(t), z(t)$- nominal reference', 'L2 point' );
 set(l,'Interpreter','Latex');
 set(l,'Interpreter','Latex');
 

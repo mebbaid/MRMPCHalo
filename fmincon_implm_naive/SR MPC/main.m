@@ -22,6 +22,8 @@ b(2)    = 5/2;
 phi     = 0;
 
 insertion_error = 0;  % orbit insertion error (set to -0.03 to start near orbit)
+distanceScale = 384400; % distance between two primaries
+% errorScale = distanceScale/1000;  % error in km
 
 % simulation parameters
 disturbance = 0;
@@ -167,7 +169,7 @@ l.FontSize = 18;
 subplot(2,2,3);
 l = title('Norm of the error');
 set(l,'Interpreter','Latex');
-plot(t, erms, 'r', 'LineWidth', 1.5);
+plot(t, erms*distanceScale, 'r', 'LineWidth', 1.5);
 hold on; grid on;
 l = legend('NMPC fmincon $\|e(t)\|$ km');
 set(l,'Interpreter','Latex');
