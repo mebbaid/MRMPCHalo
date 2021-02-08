@@ -4,13 +4,12 @@ clc
 clear all
 
 %% set case to be simulated
-delta = 0.1; % adjust for hours (0.15 is one hour) (0.01 = 4 minutes)
+delta = 0.05; % adjust for hours (0.15 is one hour) (0.01 = 4 minutes)
 % delta_b = delta/2;
 saturation = 0; % set to one to incorporate saturation on the control.
 sat_constraint = 0; % set to one to include saturation as as a constraint in MPC formulation
-disturbance = 0;  % set to one to incoporate disturbances
-srp         = 0; % 
-emulation = delta; % put emulation = delta to simulate emulated control for FL
+disturbance = 1;  % set to one to incoporate disturbances
+srp         = 1; % 
 delay = 0; % put to one to include effect of delay
 if saturation == 1
     satValue = 15; % adjust this value to saturate inputs
@@ -58,18 +57,18 @@ x0 = [L2;0;0;0;0;0];
 %uncomment the following lines if you want to start near the orbit or near
 %the moon surface
 % insertion_error = 0;
-% insertion_error = -0.3; 
-% Seq = [L2 + insertion_error;0;0;0;0;0];   
-% 
-% ho1 = [(-k*(1-c(1)+Omega^2)/(2*Omega))*cos(0);
-%        k*sin(0);
-%        k*cos(0)];
-%    
-% diffho1 = [(k*(1-c(1)+Omega^2)/2)*sin(Omega*0);
-%            Omega*k*cos(Omega*0);
-%            -Omega_z*k*sin(Omega_z*0)];
-%       
-% x0 = Seq + [ho1;diffho1];
+insertion_error = -0.1; 
+Seq = [L2 + insertion_error;0;0;0;0;0];   
+
+ho1 = [(-k*(1-c(1)+Omega^2)/(2*Omega))*cos(0);
+       k*sin(0);
+       k*cos(0)];
+   
+diffho1 = [(k*(1-c(1)+Omega^2)/2)*sin(Omega*0);
+           Omega*k*cos(Omega*0);
+           -Omega_z*k*sin(Omega_z*0)];
+      
+x0 = Seq + [ho1;diffho1];
 
 % feedback linearization and pole placement if activated
 pole = [-2 -1.5 -3 -2.5 -3.1 -2.6];
@@ -129,7 +128,7 @@ ysr = ans.ysr*distanceScale;
 zmpc = ans.z;
 vmpc = ans.v;
 umpc = ans.u;
-e_rms_mpc = ans.e_rms*distanceScale;
+e_rms_mpc = ans.e_rms;
 norm_umpc = ans.DeltaV;
 mrmpcstatus = ans.mrmpcstatus;
 % veloIncr_mrmpc = sum(deltaVmpc(round(simTime*timescale/2)))/21;
