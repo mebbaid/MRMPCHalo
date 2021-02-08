@@ -4,12 +4,12 @@ clc
 clear all
 
 %% set case to be simulated
-delta = 0.1; % adjust for hours (0.15 is one hour) (0.01 = 4 minutes)
+delta = 0.05; % adjust for hours (0.15 is one hour) (0.01 = 4 minutes)
 % delta_b = delta/2;
 saturation = 0; % set to one to incorporate saturation on the control.
 sat_constraint = 0; % set to one to include saturation as as a constraint in MPC formulation
-disturbance = 1;  % set to one to incoporate disturbances
-srp         = 1; % 
+disturbance = 0;  % set to one to incoporate disturbances
+srp         = 0; % 
 emulation = delta; % put emulation = delta to simulate emulated control for FL
 delay = 0; % put to one to include effect of delay
 if saturation == 1
@@ -46,7 +46,7 @@ e   =  0.0549;  % EM rotating system e
 % e   = 0;
 
 % srp parameters
-Gsc = 1.3608 ; % approx kw
+Gsc = 1360.8 ; % approx kw
 sped = 300000; % approx m/s
 zeta = 0.9252 ;   % prep. on the space-craft
 
@@ -131,19 +131,20 @@ vmpc = ans.v;
 umpc = ans.u;
 empc = ans.error*errorScale;
 e_rms_mpc = ans.e_rms*errorScale;
-deltaVmpc = ans.DeltaV;
+norm_umpc = ans.DeltaV;
 mrmpcstatus = ans.mrmpcstatus;
-veloIncr_mrmpc = sum(deltaVmpc(round(simTime*timescale/2)))/21;
+% veloIncr_mrmpc = sum(deltaVmpc(round(simTime*timescale/2)))/21;
+
 
 
 
 figure('Name','MR MPC');
 
-subplot(3,2,1);
+subplot(2,2,1);
 l = title('Proposed MR MPC');
 set(l,'Interpreter','Latex');
 plot3(ympc(:,1),ympc(:,2), ympc(:,3), 'r', 'LineWidth', 3);
-hold on
+hold on; grid on;
 % plot3(refmpc(:,1)*distanceScale,refmpc(:,2)*distanceScale, refmpc(:,3)*distanceScale, 'b--', 'LineWidth', 1.5);
 plot3(n_refmpc(:,1)*distanceScale,n_refmpc(:,2)*distanceScale, n_refmpc(:,3)*distanceScale, 'k', 'LineWidth', 3);
 scatter3(L2*distanceScale,0,0,'b','diamond');
@@ -158,41 +159,8 @@ l = legend('$x(t), y(t), z(t)$- MR MPC trajectory','$x(t), y(t), z(t)$- nominal 
 set(l,'Interpreter','Latex');
 set(l,'Interpreter','Latex');
 
-subplot(3,2,2)
-set(l,'Interpreter','Latex');
-l = title('y-z plot');
-set(l,'Interpreter','Latex');
-plot(refmpc(:,2)*distanceScale, refmpc(:,3)*distanceScale, 'k', 'LineWidth', 1.5);
-hold on; grid on;
-plot(ympc(:,2), ympc(:,3), 'r', 'LineWidth', 1.5);
-l = legend('$y_r$-$z_r$ MR planned reference', '$y$-$z$ MR MPC actual trajectory');
-set(l,'Interpreter','Latex');
-l = xlabel('y-z plot (km)'); 
-l.FontSize = 18;
 
-subplot(3,2,3);
-l = title('x-y plot');
-set(l,'Interpreter','Latex');
-plot(refmpc(:,1)*distanceScale, -refmpc(:,2)*distanceScale, 'k', 'LineWidth', 1.5);
-hold on; grid on;
-plot(ympc(:,1), -ympc(:,2), 'r', 'LineWidth', 1.5);
-l = legend('$x_r$-$y_r$ MR planned reference', '$x$-$-y$ MR MPC actual trajectory');
-set(l,'Interpreter','Latex');
-l = xlabel('x-y plot (km)'); 
-l.FontSize = 18;
-
-subplot(3,2,4);
-l = title('x-z plot');
-set(l,'Interpreter','Latex');
-plot(refmpc(:,1)*distanceScale, refmpc(:,3)*distanceScale, 'k', 'LineWidth', 1.5);
-hold on; grid on;
-plot(ympc(:,1), ympc(:,3), 'r', 'LineWidth', 1.5);
-l = legend('$x_r$-$z_r$ MR planned reference', '$x$-$z$ MR MPC actual trajectory ');
-set(l,'Interpreter','Latex');
-l = xlabel('x-z plot (km)'); 
-l.FontSize = 18;
-
-subplot(3,2,5);
+subplot(2,2,2);
 l = title('Controls');
 set(l,'Interpreter','Latex');
 plot(t*timescale, umpc(:,1), 'k', 'LineWidth', 1.5);
@@ -204,16 +172,36 @@ set(l,'Interpreter','Latex');
 l = xlabel('Time (h)'); 
 l.FontSize = 18;
 
-
-subplot(3,2,6);
-l = title('Primer disturbances');
+subplot(2,2,3);
+l = title('Root mean square error');
 set(l,'Interpreter','Latex');
-plot(t*timescale, zmpc(:,1), 'k', 'LineWidth', 1.5);
+plot(t*timescale, e_rms_mpc, 'r', 'LineWidth', 1.5);
 hold on; grid on;
-plot(t*timescale, zmpc(:,2), 'r', 'LineWidth', 1.5);
-plot(t*timescale, zmpc(:,3), 'b', 'LineWidth', 1.5);
-plot(t*timescale, zmpc(:,4), 'g', 'LineWidth', 1.5);
-l = legend('$z_1(t)$', '$z_2(t)$', '$z_3(t)$','$z_4(t)$');
+l = legend('MR MPC $e_{RMS}(t)$ km');
 set(l,'Interpreter','Latex');
 l = xlabel('Time (h)'); 
 l.FontSize = 18;
+hold off;
+
+subplot(2,2,3);
+l = title('Root mean square error');
+set(l,'Interpreter','Latex');
+plot(t*timescale, e_rms_mpc, 'r', 'LineWidth', 1.5);
+hold on; grid on;
+l = legend('MR MPC $e_{RMS}(t)$ km');
+set(l,'Interpreter','Latex');
+l = xlabel('Time (h)'); 
+l.FontSize = 18;
+hold off;
+
+subplot(2,2,4);
+l = title('Control effort magnitutde');
+set(l,'Interpreter','Latex');
+plot(t*timescale, norm_umpc, 'k', 'LineWidth', 1.5);
+hold on; grid on;
+l = legend('MR MPC  $\|u\|(t)$');
+set(l,'Interpreter','Latex');
+l = xlabel('Time (h)'); 
+l.FontSize = 18;
+hold off;
+
