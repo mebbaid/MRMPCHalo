@@ -2,12 +2,11 @@ clc
 clear all
 
 %% set case to be simulated
-delta = 0.05; % adjust for hours (0.15 is one hour) (0.01 = 4 minutes)
+delta = 0.1; % adjust for hours (0.15 is one hour) (0.01 = 4 minutes)
 % delta_b = delta/2;
 saturation = 0; % set to one to incorporate saturation on the control.
-sat_constraint = 0; % set to one to include saturation as as a constraint in MPC formulation
 disturbance = 1;  % set to one to incoporate disturbances
-srp         = 1; % solar radiation pressure
+srp         = 0; % solar radiation pressure
 emulation = delta; % put emulation = delta to simulate emulated control for FL
 delay = 0; % put to one to include effect of delay
 if saturation == 1
@@ -59,18 +58,18 @@ x0 = [L2;0;0;0;0;0];
 %uncomment the following lines if you want to start near the orbit or near
 %the moon surface
 % insertion_error = 0;
-insertion_error = -0.1; 
-Seq = [L2 + insertion_error;0;0;0;0;0];   
-
-ho1 = [(-k*(1-c(1)+Omega^2)/(2*Omega))*cos(0);
-       k*sin(0);
-       k*cos(0)];
-   
-diffho1 = [(k*(1-c(1)+Omega^2)/2)*sin(Omega*0);
-           Omega*k*cos(Omega*0);
-           -Omega_z*k*sin(Omega_z*0)];
-      
-x0 = Seq + [ho1;diffho1];
+% insertion_error = -0.1; 
+% Seq = [L2 + insertion_error;0;0;0;0;0];   
+% 
+% ho1 = [(-k*(1-c(1)+Omega^2)/(2*Omega))*cos(0);
+%        k*sin(0);
+%        k*cos(0)];
+%    
+% diffho1 = [(k*(1-c(1)+Omega^2)/2)*sin(Omega*0);
+%            Omega*k*cos(Omega*0);
+%            -Omega_z*k*sin(Omega_z*0)];
+%       
+% x0 = Seq + [ho1;diffho1];
 
 % feedback linearization and pole placement if activated
 pole = [-2 -1.5 -3 -2.5 -3.1 -2.6];
@@ -90,15 +89,14 @@ t = 0:10^-3:simTime;
 sim('HaloSim.slx');    
 % plots
 xfl = ans.x;
-reffl = ans.xr;
-n_reffl = ans.n_ref;
+reffl = ans.xr*distanceScale;
 yfl = ans.y*distanceScale;
 zfl = ans.z;
 vfl = ans.v;
 ufl = ans.u;
 
 xreg = ans.xreg;
-refreg = ans.refreg;
+refreg = ans.refreg*distanceScale;
 yreg = ans.yreg*distanceScale;
 zreg = ans.zreg;
 ureg = ans.ureg;
@@ -115,7 +113,7 @@ figure('Name','Feedback linearization');
 subplot(2,2,1);
 l = title('3D plot of trajectory under FL');
 set(l,'Interpreter','Latex');
-plot3(reffl(:,1)*distanceScale, reffl(:,2)*distanceScale, reffl(:,3)*distanceScale, 'k', 'LineWidth', 1.5);
+plot3(reffl(:,1), reffl(:,2), reffl(:,3), 'k', 'LineWidth', 1.5);
 hold on; grid on;
 plot3(yfl(:,1),yfl(:,2), yfl(:,3), 'r', 'LineWidth', 1.5);
 l = legend('$x(t), y(t), z(t)$- Nominal reference','$x(t), y(t), z(t)$- Feedback linearization trajectory', 'L2 point' );
@@ -165,7 +163,7 @@ figure('Name','Nonlinear regulation');
 subplot(2,2,1);
 l = title('3D plot of trajectory under regulation');
 set(l,'Interpreter','Latex');
-plot3(refreg(:,1)*distanceScale, refreg(:,2)*distanceScale, refreg(:,3)*distanceScale, 'k', 'LineWidth', 1.5);
+plot3(refreg(:,1), refreg(:,2), refreg(:,3), 'k', 'LineWidth', 1.5);
 hold on; grid on;
 plot3(yreg(:,1),yreg(:,2), yreg(:,3), 'r', 'LineWidth', 1.5);
 l = legend('$x(t), y(t), z(t)$- Nominal reference','$x(t), y(t), z(t)$- Nonlinear regulaiton trajectory', 'L2 point' );
