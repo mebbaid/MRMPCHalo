@@ -46,7 +46,7 @@ ny       = nx;
 nu       = 3;
 nd       = 4;
 Q        = diag([10 10 10 1 1 1]);
-R        = 0*eye(nu);
+R        = 0.1*eye(nu);
 
 
 x0      = [L2;0;0;0;0;0];
@@ -77,7 +77,7 @@ end
 
 % ref preparation
 Seq     = [L2 + insertion_error;0;0;0;0;0];   
-e       = exp(1);
+e       = 0.0549;
 ho1     = zeros(3,np);
 diffho1 = zeros(3,np);
 
@@ -141,7 +141,7 @@ l = title('Three dimensional plot');
 set(l,'Interpreter','Latex');
 plot3(xtraj(1,:),xtraj(2,:), xtraj(3,:), 'r', 'LineWidth', 1.5);
 hold on; grid on;
-plot3(ref(1,:),ref(2,:), ref(3,:), 'b', 'LineWidth', 1.5);
+plot3(ref(1,:),ref(2,:), ref(3,:), 'k', 'LineWidth', 1.5);
 hold on
 scatter3(L2,0,0,'b','diamond');
 l = xlabel('$x_1$');
@@ -150,7 +150,7 @@ l = ylabel('$x_2$');
 set(l,'Interpreter','Latex');
 l = zlabel('$x_3$');
 set(l,'Interpreter','Latex');
-l = legend('$x(t), y(t), z(t)$- MPC trajectory','$x(t), y(t), z(t)$- Nominal trajectory', 'L2 point' );
+l = legend('$x(t), y(t), z(t)$- NMPC trajectory','$x(t), y(t), z(t)$- Nominal trajectory', 'L2 point' );
 
 
 subplot(2,2,2)
@@ -169,9 +169,9 @@ l.FontSize = 18;
 subplot(2,2,3);
 l = title('Norm of the error');
 set(l,'Interpreter','Latex');
-plot(t, erms*distanceScale, 'r', 'LineWidth', 1.5);
+plot(t, erms, 'r', 'LineWidth', 1.5);
 hold on; grid on;
-l = legend('NMPC fmincon $\|e(t)\|$ km');
+l = legend('NMPC $\|e(t)\|$');
 set(l,'Interpreter','Latex');
 l = xlabel('Time (h)'); 
 l.FontSize = 18;

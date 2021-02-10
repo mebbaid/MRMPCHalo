@@ -2,11 +2,11 @@ clc
 clear all
 
 %% set case to be simulated
-delta = 0.1; % adjust for hours (0.15 is one hour) (0.01 = 4 minutes)
+delta = 0.05; % adjust for hours (0.15 is one hour) (0.01 = 4 minutes)
 % delta_b = delta/2;
 saturation = 0; % set to one to incorporate saturation on the control.
 sat_constraint = 0; % set to one to include saturation as as a constraint in MPC formulation
-disturbance = 1;  % set to one to incoporate disturbances
+disturbance = 0;  % set to one to incoporate disturbances
 srp         = 0; % solar radiation pressure
 emulation =delta; % put emulation = delta to simulate emulated control for FL
 delay = 0; % put to one to include effect of delay
@@ -47,6 +47,11 @@ phi = 0;
 e   =  0.0549;  % EM rotating system e
 % e   = 0;
 
+% srp parameters
+Gsc = 1360.8 ; % approx kw
+sped = 300000; % approx m/s
+zeta = 0.9252 ;   % prep. on the space-craft
+
 % satellite init position and velocity
 u0 = [0;0;0];
 x0 = [L2;0;0;0;0;0];
@@ -79,7 +84,7 @@ K = place(A,G,pole);
 simTime = 15; % set to 4380 for long term 6 months station keeping
 ref_select = 1;  % set to 1 for L2 orbit, set to 2 for to consider also effects of eccentricity
 t = 0:10^-3:simTime;
-
+ts = 0:delta:simTime;
 
 % MR inversion
 sim('HaloSim_SD.slx'); %uncomment to check MR inversion
@@ -91,61 +96,28 @@ zmr = ans.z;
 vmr = ans.v;
 umr = ans.u;
 emr = ans.error*errorScale;
-e_rms_mr = ans.e_rms*errorScale;
+e_rms_mr = ans.e_rms;
 deltaVmr = ans.DeltaV;
 
 veloIncr_mr = sum(deltaVmr(round(simTime*timescale/2)))/21;
 
 
-figure('Name','MR Inversion');
+figure('Name','MR SD regulation');
 
-subplot(3,2,1);
+subplot(2,2,1);
 l = title('x-z plot');
 set(l,'Interpreter','Latex');
-plot(refmr(:,1)*distanceScale, refmr(:,3)*distanceScale, 'k', 'LineWidth', 1.5);
+plot3(refmr(:,1)*distanceScale, refmr(:,2)*distanceScale,refmr(:,3)*distanceScale, 'k', 'LineWidth', 1.5);
 hold on; grid on;
-plot(ymr(:,1), ymr(:,3), 'r', 'LineWidth', 1.5);
-l = legend('$x_r$-$z_r$ Nominal reference', '$x$-$z$ MR actual trajectory');
+plot3(ymr(:,1), ymr(:,2),ymr(:,3), 'r', 'LineWidth', 1.5);
+scatter3(L2*distanceScale,0,0,'b','diamond');
+l = legend('$x(t), y(t), z(t)$ Nominal reference', '$x(t), y(t), z(t)$ MR actual trajectory', 'L2 point');
 set(l,'Interpreter','Latex');
 l = xlabel('x-z plot (km)'); 
 l.FontSize = 18;
 
 
-subplot(3,2,2)
-set(l,'Interpreter','Latex');
-l = title('y-z plot');
-set(l,'Interpreter','Latex');
-plot(refmr(:,2)*distanceScale, refmr(:,3)*distanceScale, 'k', 'LineWidth', 1.5);
-hold on; grid on;
-plot(ymr(:,2), ymr(:,3), 'r', 'LineWidth', 1.5);
-l = legend('$y_r$-$z_r$ Nominal reference', '$y$-$z$ MR actual trajectory');
-set(l,'Interpreter','Latex');
-l = xlabel('y-z plot (km)'); 
-l.FontSize = 18;
-
-subplot(3,2,3);
-l = title('x-y plot');
-set(l,'Interpreter','Latex');
-plot(refmr(:,1)*distanceScale, -refmr(:,2)*distanceScale, 'k', 'LineWidth', 1.5);
-hold on; grid on;
-plot(ymr(:,1), -ymr(:,2), 'r', 'LineWidth', 1.5);
-l = legend('$x_r$-$y_r$ Nominal reference', '$x$-$-y$ MR actual trajectory');
-set(l,'Interpreter','Latex');
-l = xlabel('x-y plot (km)'); 
-l.FontSize = 18;
-
-subplot(3,2,4);
-l = title('x-z plot');
-set(l,'Interpreter','Latex');
-plot(refmr(:,1)*distanceScale, refmr(:,3)*distanceScale, 'k', 'LineWidth', 1.5);
-hold on; grid on;
-plot(ymr(:,1), ymr(:,3), 'r', 'LineWidth', 1.5);
-l = legend('$x_r$-$z_r$ Nominal reference', '$x$-$z$ MR actual trajectory ');
-set(l,'Interpreter','Latex');
-l = xlabel('x-z plot (km)'); 
-l.FontSize = 18;
-
-subplot(3,2,5);
+subplot(2,2,2)
 l = title('Controls');
 set(l,'Interpreter','Latex');
 plot(t*timescale, umr(:,1), 'k', 'LineWidth', 1.5);
@@ -158,15 +130,24 @@ l = xlabel('Time (h)');
 l.FontSize = 18;
 
 
-subplot(3,2,6);
-l = title('Primer disturbances');
+subplot(2,2,3);
+l = title('Norm of the error');
 set(l,'Interpreter','Latex');
-plot(t*timescale, zmr(:,1), 'k', 'LineWidth', 1.5);
+plot(ts*timescale, e_rms_mr, 'r', 'LineWidth', 1.5);
 hold on; grid on;
-plot(t*timescale, zmr(:,2), 'r', 'LineWidth', 1.5);
-plot(t*timescale, zmr(:,3), 'b', 'LineWidth', 1.5);
-plot(t*timescale, zmr(:,4), 'g', 'LineWidth', 1.5);
-l = legend('$z_1(t)$', '$z_2(t)$', '$z_3(t)$','$z_4(t)$');
+l = legend('MR SD regulation $\|e(t)\|$');
 set(l,'Interpreter','Latex');
 l = xlabel('Time (h)'); 
 l.FontSize = 18;
+hold off;
+
+subplot(2,2,4);
+l = title('Control effort magnitutde');
+set(l,'Interpreter','Latex');
+plot(t*timescale, deltaVmr, 'k', 'LineWidth', 1.5);
+hold on; grid on;
+l = legend('MR SD regulation  $\|u\|(t)$');
+set(l,'Interpreter','Latex');
+l = xlabel('Time (h)'); 
+l.FontSize = 18;
+hold off;

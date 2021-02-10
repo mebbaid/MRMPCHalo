@@ -1,4 +1,4 @@
-% main functions gahering different simulations and cases 
+ % main functions gahering different simulations and cases 
 
 clc
 clear all
@@ -8,8 +8,8 @@ delta = 0.05; % adjust for hours (0.15 is one hour) (0.01 = 4 minutes)
 % delta_b = delta/2;
 saturation = 0; % set to one to incorporate saturation on the control.
 sat_constraint = 0; % set to one to include saturation as as a constraint in MPC formulation
-disturbance = 1;  % set to one to incoporate disturbances
-srp         = 1; % 
+disturbance = 0;  % set to one to incoporate disturbances
+srp         = 0; % 
 delay = 0; % put to one to include effect of delay
 if saturation == 1
     satValue = 15; % adjust this value to saturate inputs
@@ -42,7 +42,7 @@ b(1) = 2;
 b(2) = 5/2;
 phi = 0;
 e   =  0.0549;  % EM rotating system e
-% e   = 0;
+e   = 0;
 
 % srp parameters
 Gsc = 1360.8 ; % approx kw
@@ -90,29 +90,33 @@ timescale = 6.5; % scaling factor such that each s in simulation is an hour
 distanceScale = 384400; % distance between two primaries
 errorScale = distanceScale/1000;  % error in km
 accScale = 1000; % accelarations in m/s^2
+% Q = [ones(np,1) ones(np,1) ones(np,1) zeros(np,1) zeros(np,1) zeros(np,1)];
+% R = zeros(np,3);
+% options = optimoptions('fmincon','Display','iter-detailed','Algorithm','sqp');
+% options = optimoptions('fmincon','OutputFcn',@optoutfun,'Algorithm','sqp');
+% options = optimoptions('fmincon','PlotFcn','optimplot
 options = optimoptions('fmincon','Algorithm','sqp');
 % Nonlinear MPC controller
-nlobj = nlmpc(nx, ny, nu);
-nlobj.Ts = Ts;
-nlobj.PredictionHorizon = np;
-nlobj.ControlHorizon = nc; 
-nlobj.Model.StateFcn = "Satellite";
-nlobj.Model.IsContinuousTime = true;
-nlobj.Model.OutputFcn = @(x,u,Ts) [x(1);x(2);x(3); x(4);x(5);x(6)];
-nlobj.Model.NumberOfParameters = 1;
-% nlobj.Weights.OutputVariables = [1 1 1 0 0 0;10 10 10 0 0 0];
-nlobj.Weights.OutputVariables = [10 10 10 1 1 1];
-nlobj.Weights.ManipulatedVariablesRate = r*[1 1 1];% try to play with weights 
+nlobjsr = nlmpc(nx, ny, nu);
+nlobjsr.Ts = Ts;
+nlobjsr.PredictionHorizon = np;
+nlobjsr.ControlHorizon = nc; 
+nlobjsr.Model.StateFcn = "Satellite";
+nlobjsr.Model.IsContinuousTime = true;
+nlobjsr.Model.OutputFcn = @(x,u,Ts) [x(1);x(2);x(3); x(4);x(5);x(6)];
+nlobjsr.Model.NumberOfParameters = 1;
+nlobjsr.Weights.OutputVariables = [10 10 10 1 1 1];
+nlobjsr.Weights.ManipulatedVariablesRate = r*[1 1 1];% try to play with weights
 if sat_constraint == 1
-    nlobj.ManipulatedVariables(1).Max = satValue;
-    nlobj.ManipulatedVariables(2).Max = satValue;
-    nlobj.ManipulatedVariables(3).Max = satValue;
-    nlobj.ManipulatedVariables(1).Min = -satValue;
-    nlobj.ManipulatedVariables(2).Min = -satValue;
-    nlobj.ManipulatedVariables(3).Min = -satValue;
+    nlobjsr.ManipulatedVariables(1).Max = satValue;
+    nlobjsr.ManipulatedVariables(2).Max = satValue;
+    nlobjsr.ManipulatedVariables(3).Max = satValue;
+    nlobjsr.ManipulatedVariables(1).Min = -satValue;
+    nlobjsr.ManipulatedVariables(2).Min = -satValue;
+    nlobjsr.ManipulatedVariables(3).Min = -satValue;
 end
-validateFcns(nlobj,x0,u0,[],{Ts}); 
-createParameterBus(nlobj,'MPCHalo/Nonlinear MPC Controller','myBusObject',{Ts});
+validateFcns(nlobjsr,x0,u0,[],{Ts});
+createParameterBus(nlobjsr,'HaloMPCMatlab/Nonlinear MPC Controller','myBusObject',{Ts})
 
 %% Simulation 
 simTime = 10; % set to 4380 for long term 6 months station keeping
@@ -120,32 +124,30 @@ ref_select = 1;  % set to 1 for L2 orbit, set to 2 for to consider also effects 
 t = 0:10^-3:simTime;
 ts = 0:delta:simTime;
 
-sim('MPCHalo.slx');
-xmpc = ans.x;
-refmpc = ans.xr;
-n_refmpc = ans.n_ref;
-ympc = ans.y*distanceScale;
-ysr = ans.ysr*distanceScale;
-zmpc = ans.z;
-vmpc = ans.v;
-umpc = ans.u;
-e_rms_mpc = ans.e_rms;
-norm_umpc = ans.DeltaV;
-mrmpcstatus = ans.mrmpcstatus;
-% veloIncr_mrmpc = sum(deltaVmpc(round(simTime*timescale/2)))/21;
+sim('HaloMPCMatlab.slx');
+xsr = ans.x;
+refsr = ans.xr;
+ysr = ans.y*distanceScale;
+zsr = ans.z;
+vsr = ans.v;
+usr= ans.u;
+esr = ans.error*errorScale;
+e_rms_sr = ans.e_rms;
+deltaVsr = ans.DeltaV;
+srmpcstatus = ans.srmpcstatus;
+veloIncr_sr = sum(deltaVsr(round(simTime*timescale/2)))/21;
 
 
 
 
-figure('Name','MR MPC');
+figure('Name','SR MPC');
 
 subplot(2,2,1);
 l = title('Proposed MR MPC');
 set(l,'Interpreter','Latex');
-plot3(ympc(:,1),ympc(:,2), ympc(:,3), 'r', 'LineWidth', 1.5);
+plot3(ysr(:,1),ysr(:,2), ysr(:,3), 'r', 'LineWidth', 1.5);
 hold on; grid on;
-plot3(refmpc(:,1)*distanceScale,refmpc(:,2)*distanceScale, refmpc(:,3)*distanceScale, 'b--', 'LineWidth', 1.5);
-plot3(n_refmpc(:,1)*distanceScale,n_refmpc(:,2)*distanceScale, n_refmpc(:,3)*distanceScale, 'k', 'LineWidth', 1.5);
+plot3(refsr(:,1)*distanceScale,refsr(:,2)*distanceScale, refsr(:,3)*distanceScale, 'k', 'LineWidth', 1.5);
 scatter3(L2*distanceScale,0,0,'b','diamond');
 % plot3(xe1, xe2, xe3, 'k', 'LineWidth', 2);
 l = xlabel('$x$');
@@ -154,7 +156,7 @@ l = ylabel('$y$');
 set(l,'Interpreter','Latex');
 l = zlabel('$z$');
 set(l,'Interpreter','Latex');
-l = legend('$x(t), y(t), z(t)$- MR MPC trajectory','$x(t), y(t), z(t)$- Planned trajectory','$x(t), y(t), z(t)$- nominal reference', 'L2 point' );
+l = legend('$x(t), y(t), z(t)$- NMPC trajectory','$x(t), y(t), z(t)$- nominal reference', 'L2 point' );
 set(l,'Interpreter','Latex');
 set(l,'Interpreter','Latex');
 
@@ -162,11 +164,11 @@ set(l,'Interpreter','Latex');
 subplot(2,2,2);
 l = title('Controls');
 set(l,'Interpreter','Latex');
-plot(t*timescale, umpc(:,1), 'k', 'LineWidth', 1.5);
+plot(t*timescale, usr(:,1), 'k', 'LineWidth', 1.5);
 hold on; grid on;
-plot(t*timescale, umpc(:,2), 'r', 'LineWidth', 1.5);
-plot(t*timescale, umpc(:,3), 'b', 'LineWidth', 1.5);
-l = legend('MR MPC $u_1(t)$', 'MR MPC $u_2(t)$', 'MR MPC $u_3(t)$');
+plot(t*timescale, usr(:,2), 'r', 'LineWidth', 1.5);
+plot(t*timescale, usr(:,3), 'b', 'LineWidth', 1.5);
+l = legend('NMPC $u_1(t)$', 'NMPC $u_2(t)$', 'NMPC $u_3(t)$');
 set(l,'Interpreter','Latex');
 l = xlabel('Time (h)'); 
 l.FontSize = 18;
@@ -175,9 +177,9 @@ l.FontSize = 18;
 subplot(2,2,3);
 l = title('Norm of the error');
 set(l,'Interpreter','Latex');
-plot(ts*timescale, e_rms_mpc, 'r', 'LineWidth', 1.5);
+plot(ts*timescale, e_rms_sr, 'r', 'LineWidth', 1.5);
 hold on; grid on;
-l = legend('MR MPC $\|e(t)\|$ km');
+l = legend('NMPC $\|e(t)\|$ km');
 set(l,'Interpreter','Latex');
 l = xlabel('Time (h)'); 
 l.FontSize = 18;
@@ -186,9 +188,9 @@ hold off;
 subplot(2,2,4);
 l = title('Control effort magnitutde');
 set(l,'Interpreter','Latex');
-plot(t*timescale, norm_umpc, 'k', 'LineWidth', 1.5);
+plot(t*timescale, deltaVsr, 'k', 'LineWidth', 1.5);
 hold on; grid on;
-l = legend('MR MPC  $\|u\|(t)$');
+l = legend('NMPC  $\|u\|(t)$');
 set(l,'Interpreter','Latex');
 l = xlabel('Time (h)'); 
 l.FontSize = 18;
