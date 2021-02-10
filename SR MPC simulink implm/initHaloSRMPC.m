@@ -6,18 +6,18 @@ clear all
 %% set case to be simulated
 delta = 0.05; % adjust for hours (0.15 is one hour) (0.01 = 4 minutes)
 % delta_b = delta/2;
-saturation = 0; % set to one to incorporate saturation on the control.
+saturation = 1; % set to one to incorporate saturation on the control.
 sat_constraint = 0; % set to one to include saturation as as a constraint in MPC formulation
-disturbance = 0;  % set to one to incoporate disturbances
-srp         = 0; % 
+disturbance = 1;  % set to one to incoporate disturbances
+srp         = 1; % 
 delay = 0; % put to one to include effect of delay
 if saturation == 1
-    satValue = 15; % adjust this value to saturate inputs
+    satValue = 0.55; % adjust this value to saturate inputs
 else
     satValue = inf;
 end
 
-r = 0.1; % control penalty if consistent penalty on three controls is required
+r = 0.0; % control penalty if consistent penalty on three controls is required
 
 %% models parameters and init conditions
 L2 = 1.1556;
@@ -42,7 +42,7 @@ b(1) = 2;
 b(2) = 5/2;
 phi = 0;
 e   =  0.0549;  % EM rotating system e
-e   = 0;
+% e   = 0;
 
 % srp parameters
 Gsc = 1360.8 ; % approx kw
@@ -57,18 +57,18 @@ x0 = [L2;0;0;0;0;0];
 %uncomment the following lines if you want to start near the orbit or near
 %the moon surface
 % insertion_error = 0;
-% insertion_error = -0.1; 
-% Seq = [L2 + insertion_error;0;0;0;0;0];   
-% 
-% ho1 = [(-k*(1-c(1)+Omega^2)/(2*Omega))*cos(0);
-%        k*sin(0);
-%        k*cos(0)];
-%    
-% diffho1 = [(k*(1-c(1)+Omega^2)/2)*sin(Omega*0);
-%            Omega*k*cos(Omega*0);
-%            -Omega_z*k*sin(Omega_z*0)];
-%       
-% x0 = Seq + [ho1;diffho1];
+insertion_error = -0.1; 
+Seq = [L2 + insertion_error;0;0;0;0;0];   
+
+ho1 = [(-k*(1-c(1)+Omega^2)/(2*Omega))*cos(0);
+       k*sin(0);
+       k*cos(0)];
+   
+diffho1 = [(k*(1-c(1)+Omega^2)/2)*sin(Omega*0);
+           Omega*k*cos(Omega*0);
+           -Omega_z*k*sin(Omega_z*0)];
+      
+x0 = Seq + [ho1;diffho1];
 
 % feedback linearization and pole placement if activated
 pole = [-2 -1.5 -3 -2.5 -3.1 -2.6];
@@ -105,7 +105,7 @@ nlobjsr.Model.StateFcn = "Satellite";
 nlobjsr.Model.IsContinuousTime = true;
 nlobjsr.Model.OutputFcn = @(x,u,Ts) [x(1);x(2);x(3); x(4);x(5);x(6)];
 nlobjsr.Model.NumberOfParameters = 1;
-nlobjsr.Weights.OutputVariables = [10 10 10 1 1 1];
+nlobjsr.Weights.OutputVariables = [10 10 10 0 0 0];
 nlobjsr.Weights.ManipulatedVariablesRate = r*[1 1 1];% try to play with weights
 if sat_constraint == 1
     nlobjsr.ManipulatedVariables(1).Max = satValue;

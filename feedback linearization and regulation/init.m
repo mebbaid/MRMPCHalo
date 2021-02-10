@@ -4,13 +4,13 @@ clear all
 %% set case to be simulated
 delta = 0.05; % adjust for hours (0.15 is one hour) (0.01 = 4 minutes)
 % delta_b = delta/2;
-saturation = 0; % set to one to incorporate saturation on the control.
-disturbance = 0;  % set to one to incoporate disturbances
-srp         = 0; % solar radiation pressure
+saturation = 1; % set to one to incorporate saturation on the control.
+disturbance = 1;  % set to one to incoporate disturbances
+srp         = 1; % solar radiation pressure
 emulation = delta; % put emulation = delta to simulate emulated control for FL
 delay = 0; % put to one to include effect of delay
 if saturation == 1
-    satValue = 15; % adjust this value to saturate inputs
+    satValue = 0.55; % adjust this value to saturate inputs
 else
     satValue = inf;
 end
@@ -48,7 +48,7 @@ e   =  0.0549;  % EM rotating system e
 
 % srp parameters
 Gsc = 1360.8 ; % approx kw
-sped = 300000; % approx m/s
+sped = 300000; % approx km/s
 zeta = 0.9252 ;   % prep. on the space-craft
 
 % satellite init position and velocity
@@ -58,18 +58,18 @@ x0 = [L2;0;0;0;0;0];
 %uncomment the following lines if you want to start near the orbit or near
 %the moon surface
 % insertion_error = 0;
-% insertion_error = -0.1; 
-% Seq = [L2 + insertion_error;0;0;0;0;0];   
-% 
-% ho1 = [(-k*(1-c(1)+Omega^2)/(2*Omega))*cos(0);
-%        k*sin(0);
-%        k*cos(0)];
-%    
-% diffho1 = [(k*(1-c(1)+Omega^2)/2)*sin(Omega*0);
-%            Omega*k*cos(Omega*0);
-%            -Omega_z*k*sin(Omega_z*0)];
-%       
-% x0 = Seq + [ho1;diffho1];
+insertion_error = -0.1; 
+Seq = [L2 + insertion_error;0;0;0;0;0];   
+
+ho1 = [(-k*(1-c(1)+Omega^2)/(2*Omega))*cos(0);
+       k*sin(0);
+       k*cos(0)];
+   
+diffho1 = [(k*(1-c(1)+Omega^2)/2)*sin(Omega*0);
+           Omega*k*cos(Omega*0);
+           -Omega_z*k*sin(Omega_z*0)];
+      
+x0 = Seq + [ho1;diffho1];
 
 % feedback linearization and pole placement if activated
 pole = [-2 -1.5 -3 -2.5 -3.1 -2.6];
@@ -116,6 +116,7 @@ set(l,'Interpreter','Latex');
 plot3(reffl(:,1), reffl(:,2), reffl(:,3), 'k', 'LineWidth', 1.5);
 hold on; grid on;
 plot3(yfl(:,1),yfl(:,2), yfl(:,3), 'r', 'LineWidth', 1.5);
+scatter3(L2*distanceScale,0,0,'b','diamond');
 l = legend('$x(t), y(t), z(t)$- Nominal reference','$x(t), y(t), z(t)$- Feedback linearization trajectory', 'L2 point' );
 set(l,'Interpreter','Latex');
 l = xlabel('y-z plot (km)'); 
@@ -166,6 +167,7 @@ set(l,'Interpreter','Latex');
 plot3(refreg(:,1), refreg(:,2), refreg(:,3), 'k', 'LineWidth', 1.5);
 hold on; grid on;
 plot3(yreg(:,1),yreg(:,2), yreg(:,3), 'r', 'LineWidth', 1.5);
+scatter3(L2*distanceScale,0,0,'b','diamond');
 l = legend('$x(t), y(t), z(t)$- Nominal reference','$x(t), y(t), z(t)$- Nonlinear regulaiton trajectory', 'L2 point' );
 set(l,'Interpreter','Latex');
 l = xlabel('y-z plot (km)'); 
