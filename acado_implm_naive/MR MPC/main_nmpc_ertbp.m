@@ -12,7 +12,7 @@ else
 end
 %% PARAMETERS
 Ts = 0.1;
-EXPORT = 1;
+EXPORT = 0;
 mu = 0.012149;
 L2 = 1.556;
 insertion_error = 0; 
@@ -71,7 +71,7 @@ f_pred  = [ dot(xx) == xxd; ...
        
 acadoSet('problemname', 'sim_ertbp');
 numSteps = 3;
-sim = acado.SIMexport( Ts );
+sim = acado.SIMexport( 1e-5 );
 sim.setModel(f_expl);
 sim.set( 'INTEGRATOR_TYPE', 'INT_IRK_GL2' );
 sim.set( 'NUM_INTEGRATOR_STEPS', numSteps );
@@ -155,6 +155,9 @@ od   = repmat(z0,Np+1,1);
 input.od = od;
 dist = z0';
 
+cpu_eff = [];
+iterations = [];
+
 while time(end) < sim_time
     tic
     % Solve NMPC OCP
@@ -177,7 +180,8 @@ while time(end) < sim_time
     iter = iter+1;
     nextTime = iter*Ts;
     disp(['current time: ' num2str(nextTime) ' ' char(9) ' (RTI step -- QP error: ' num2str(output.info.status) ',' ' ' char(2) ' KKT val: ' num2str(output.info.kktValue,'% 1.2e') ',' ' ' char(2) ' CPU time: ' num2str(round(output.info.cpuTime*1e6)) ' µs)'])
-    time = [time nextTime];
+    cpu_eff = [cpu_eff output.info.cpuTime*1e6];
+    iterations = [iterations output.info.QP_iter];
     % update reference
     xr = ref_gen(nextTime,k,c,Omega, Omega_z, Seq, Ts);
     if (mod(nextTime,2*Ts) == 0)
@@ -197,25 +201,72 @@ while time(end) < sim_time
     z = [beta;mu*(1-mu)*alpha]; z1 = z(1); z2 = z(2); z3 = z(3);  z4 = z(4); od = z;
     od = repmat([z1 z2 z3 z4],Np+1,1);
     dist = [dist z];
+    time = [time nextTime];
 end
 
 
-figure('Name', 'Space craft 3D trajectory');
-plot3(state_sim(:,1), state_sim(:,2), state_sim(:,3), 'r','LineWidth' , 2)
+% 
+% figure;
+% plot(time, dist(1,:), 'r','LineWidth' , 2 );
+% hold on; grid on;
+% plot(time, dist(2,:), 'b','LineWidth' , 2 );
+% plot(time, dist(3,:), 'k','LineWidth' , 2 );
+% xlabel('time(s)')
+% ylabel('Perturbation')
+% 
+% figure;
+% semilogy(time(1:end-1), ValueFunc_MPC, ':bx');
+% xlabel('time(s)')
+% ylabel('Obj Value')
+
+
+
+figure('Name','RTI MR MPC');
+subplot(1,2,1);
+l = title('3D plot of trajectory under regulation');
+set(l,'Interpreter','Latex');
+plot3(pos_ref(:,1), pos_ref(:,2), pos_ref(:,3), 'k', 'LineWidth' , 2)
 hold on; grid on;
-plot3(pos_ref(:,1), pos_ref(:,2), pos_ref(:,3), 'b', 'LineWidth' , 2)
+plot3(state_sim(:,1), state_sim(:,2), state_sim(:,3), 'r','LineWidth' , 1.5)
 scatter3(L2,0,0,'b','diamond');
-hold off;
+l = legend('$x(t), y(t), z(t)$- Nominal reference','$x(t), y(t), z(t)$- RTI MR MPC trajectory', 'L2 point' );
+set(l,'Interpreter','Latex');
+% l = xlabel('3D plot km'); 
+l = xlabel('3D plot dimensionless'); 
+l.FontSize = 18;
 
-figure;
-plot(time, dist(1,:), 'r','LineWidth' , 2 );
-hold on; grid on;
-plot(time, dist(2,:), 'b','LineWidth' , 2 );
-plot(time, dist(3,:), 'k','LineWidth' , 2 );
-xlabel('time(s)')
-ylabel('Perturbation')
 
-figure;
-semilogy(time(1:end-1), ValueFunc_MPC, ':bx');
-xlabel('time(s)')
-ylabel('Obj Value')
+subplot(1,2,2);
+l = title('cpu time');
+set(l,'Interpreter','Latex');
+% plot(time(1:end-1), cpu_eff, 'b', 'LineWidth', 1.5);
+bar(time(1:end-1),cpu_eff);
+l = xlabel('Time');
+set(l,'Interpreter','Latex');
+l = ylabel('$\mu$ s');
+set(l,'Interpreter','Latex');
+
+
+% subplot(2,2,2)
+% l = title('Controls');
+% set(l,'Interpreter','Latex');
+% plot(time, [0; controls_MPC(:,1)], 'k', 'LineWidth', 1.5);
+% hold on; grid on;
+% plot(time, [0; controls_MPC(:,2)], 'r', 'LineWidth', 1.5);
+% plot(time, [0; controls_MPC(:,3)], 'b', 'LineWidth', 1.5);
+% l = legend('RTI MR MPC $u_1(t)$', 'RTI MR MPC $u_2(t)$', 'RTI MR MPC $u_3(t)$');
+% set(l,'Interpreter','Latex');
+% l = xlabel('Time'); 
+% l.FontSize = 18;
+
+
+% subplot(2,2,4);
+% l = title('Control effort magnitutde');
+% set(l,'Interpreter','Latex');
+% plot(t*timescale, norm_ureg, 'k', 'LineWidth', 1.5);
+% hold on; grid on;
+% l = legend('Nonlinear regulation $\|u(t)\|$');
+% set(l,'Interpreter','Latex');
+% l = xlabel('Time (h)'); 
+% l.FontSize = 18;
+% hold off;
