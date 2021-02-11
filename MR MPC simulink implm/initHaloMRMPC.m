@@ -100,8 +100,8 @@ nlobj.Model.StateFcn = "Satellite";
 nlobj.Model.IsContinuousTime = true;
 nlobj.Model.OutputFcn = @(x,u,Ts) [x(1);x(2);x(3); x(4);x(5);x(6)];
 nlobj.Model.NumberOfParameters = 1;
-nlobj.Weights.OutputVariables = [1 1 1 0 0 0;10 10 10 1 1 1];  % scenario 3
-% nlobj.Weights.OutputVariables = [10 10 10 0 0 0];
+% nlobj.Weights.OutputVariables = [1 1 1 0 0 0;10 10 10 1 1 1];  % scenario 2 
+nlobj.Weights.OutputVariables = [10 10 10 1 1 1];
 nlobj.Weights.ManipulatedVariablesRate = r*[1 1 1];% try to play with weights 
 if sat_constraint == 1
     nlobj.ManipulatedVariables(1).Max = satValue;
