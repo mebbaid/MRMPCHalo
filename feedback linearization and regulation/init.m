@@ -2,7 +2,7 @@ clc
 clear all
 
 %% set case to be simulated
-delta = 0.05; % adjust for hours (0.15 is one hour) (0.01 = 4 minutes)
+delta = 0.1; % adjust for hours (0.15 is one hour) (0.01 = 4 minutes)
 % delta_b = delta/2;
 saturation = 1; % set to one to incorporate saturation on the control.
 disturbance = 1;  % set to one to incoporate disturbances
@@ -17,8 +17,7 @@ end
 
 Ts = delta;
 timescale = 6.5; % scaling factor such that each s in simulation is an hour
-distanceScale = 384400; % distance between two primaries
-errorScale = distanceScale/1000;  % error in km
+distanceScale = 384400; % distance between the two primaries
 accScale = 1000; % accelarations in m/s^2
 
 %% models parameters and init conditions
@@ -89,23 +88,31 @@ t = 0:10^-3:simTime;
 sim('HaloSim.slx');    
 % plots
 xfl = ans.x;
-reffl = ans.xr*distanceScale;
-yfl = ans.y*distanceScale;
+% reffl = ans.xr*distanceScale;
+% yfl = ans.y*distanceScale;
+reffl = ans.xr;
+yfl = ans.y;
 zfl = ans.z;
 vfl = ans.v;
 ufl = ans.u;
 
 xreg = ans.xreg;
-refreg = ans.refreg*distanceScale;
-yreg = ans.yreg*distanceScale;
+% refreg = ans.refreg*distanceScale;
+% yreg = ans.yreg*distanceScale;
+refreg = ans.refreg;
+yreg = ans.yreg;
 zreg = ans.zreg;
 ureg = ans.ureg;
 
 e_rms_fl = ans.e_rms;
 e_rms_reg = ans.e_rms_reg;
 
+e_fl = ans.error2;
+e_reg = ans.error1;
+
 norm_ufl = ans.DeltaV;
 norm_ureg = ans.DeltaV_reg;
+% L2 = L2*distanceScale;
 
 
 figure('Name','Feedback linearization');
@@ -116,10 +123,11 @@ set(l,'Interpreter','Latex');
 plot3(reffl(:,1), reffl(:,2), reffl(:,3), 'k', 'LineWidth', 1.5);
 hold on; grid on;
 plot3(yfl(:,1),yfl(:,2), yfl(:,3), 'r', 'LineWidth', 1.5);
-scatter3(L2*distanceScale,0,0,'b','diamond');
+scatter3(L2,0,0,'b','diamond');
 l = legend('$x(t), y(t), z(t)$- Nominal reference','$x(t), y(t), z(t)$- Feedback linearization trajectory', 'L2 point' );
 set(l,'Interpreter','Latex');
-l = xlabel('y-z plot (km)'); 
+% l = xlabel('3D plot km'); 
+l = xlabel('3D plot dimensionless'); 
 l.FontSize = 18;
 
 
@@ -130,7 +138,7 @@ plot(t*timescale, ufl(:,1), 'k', 'LineWidth', 1.5);
 hold on; grid on;
 plot(t*timescale, ufl(:,2), 'r', 'LineWidth', 1.5);
 plot(t*timescale, ufl(:,3), 'b', 'LineWidth', 1.5);
-l = legend('$u_1(t)$', '$u_2(t)$', '$u_3(t)$');
+l = legend('Feedback lin. $u_1(t)$', 'Feedback lin. $u_2(t)$', 'Feedback lin. $u_3(t)$');
 set(l,'Interpreter','Latex');
 l = xlabel('Time (h)'); 
 l.FontSize = 18;
@@ -140,7 +148,7 @@ l = title('Norm of the error');
 set(l,'Interpreter','Latex');
 plot(t*timescale, e_rms_fl, 'r', 'LineWidth', 1.5);
 hold on; grid on;
-l = legend('Feedback linearization $\|e(t)\|$ km');
+l = legend('Feedback linearization $\|e(t)\|$');
 set(l,'Interpreter','Latex');
 l = xlabel('Time (h)'); 
 l.FontSize = 18;
@@ -152,7 +160,7 @@ l = title('Control effort magnitutde');
 set(l,'Interpreter','Latex');
 plot(t*timescale, norm_ufl, 'k', 'LineWidth', 1.5);
 hold on; grid on;
-l = legend('Feedback linearization $\|u\|(t)$');
+l = legend('Feedback linearization $\|u(t)\|$');
 set(l,'Interpreter','Latex');
 l = xlabel('Time (h)'); 
 l.FontSize = 18;
@@ -167,10 +175,11 @@ set(l,'Interpreter','Latex');
 plot3(refreg(:,1), refreg(:,2), refreg(:,3), 'k', 'LineWidth', 1.5);
 hold on; grid on;
 plot3(yreg(:,1),yreg(:,2), yreg(:,3), 'r', 'LineWidth', 1.5);
-scatter3(L2*distanceScale,0,0,'b','diamond');
+scatter3(L2,0,0,'b','diamond');
 l = legend('$x(t), y(t), z(t)$- Nominal reference','$x(t), y(t), z(t)$- Nonlinear regulaiton trajectory', 'L2 point' );
 set(l,'Interpreter','Latex');
-l = xlabel('y-z plot (km)'); 
+% l = xlabel('3D plot km'); 
+l = xlabel('3D plot dimensionless'); 
 l.FontSize = 18;
 
 subplot(2,2,2)
@@ -190,7 +199,7 @@ l = title('Norm of the error');
 set(l,'Interpreter','Latex');
 plot(t*timescale, e_rms_reg, 'r', 'LineWidth', 1.5);
 hold on; grid on;
-l = legend('Nonlinear regulation $\|e(t)\|$ km');
+l = legend('Nonlinear regulation $\|e(t)\|$');
 set(l,'Interpreter','Latex');
 l = xlabel('Time (h)'); 
 l.FontSize = 18;
@@ -202,7 +211,7 @@ l = title('Control effort magnitutde');
 set(l,'Interpreter','Latex');
 plot(t*timescale, norm_ureg, 'k', 'LineWidth', 1.5);
 hold on; grid on;
-l = legend('Nonlinear regulation $\|u\|(t)$');
+l = legend('Nonlinear regulation $\|u(t)\|$');
 set(l,'Interpreter','Latex');
 l = xlabel('Time (h)'); 
 l.FontSize = 18;

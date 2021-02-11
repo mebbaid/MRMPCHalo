@@ -4,7 +4,7 @@ clc
 clear all
 
 %% set case to be simulated
-delta = 0.05; % adjust for hours (0.15 is one hour) (0.01 = 4 minutes)
+delta = 0.1; % adjust for hours (0.15 is one hour) (0.01 = 4 minutes)
 % delta_b = delta/2;
 saturation = 1; % set to one to incorporate saturation on the control.
 sat_constraint = 1; % set to one to include saturation as as a constraint in MPC formulation
@@ -53,22 +53,22 @@ zeta = 0.9252 ;   % prep. on the space-craft
 % satellite init position and velocity
 u0 = [0;0;0];
 x0 = [L2;0;0;0;0;0];
-x0 = [1;0;0;0;0;0]; % starting near Moon surface
+% x0 = [1;0;0;0;0;0]; % starting near Moon surface
 %uncomment the following lines if you want to start near the orbit or near
 %the moon surface
 % insertion_error = 0;
-% insertion_error = -0.1; 
-% Seq = [L2 + insertion_error;0;0;0;0;0];   
-% 
-% ho1 = [(-k*(1-c(1)+Omega^2)/(2*Omega))*cos(0);
-%        k*sin(0);
-%        k*cos(0)];
-%    
-% diffho1 = [(k*(1-c(1)+Omega^2)/2)*sin(Omega*0);
-%            Omega*k*cos(Omega*0);
-%            -Omega_z*k*sin(Omega_z*0)];
-%       
-% x0 = Seq + [ho1;diffho1];
+insertion_error = -0.1; 
+Seq = [L2 + insertion_error;0;0;0;0;0];   
+
+ho1 = [(-k*(1-c(1)+Omega^2)/(2*Omega))*cos(0);
+       k*sin(0);
+       k*cos(0)];
+   
+diffho1 = [(k*(1-c(1)+Omega^2)/2)*sin(Omega*0);
+           Omega*k*cos(Omega*0);
+           -Omega_z*k*sin(Omega_z*0)];
+      
+x0 = Seq + [ho1;diffho1];
 
 % feedback linearization and pole placement if activated
 pole = [-2 -1.5 -3 -2.5 -3.1 -2.6];
@@ -83,7 +83,7 @@ K = place(A,G,pole);
 nx = 6;
 ny = 6;  % outputs are x,y directly
 nu = 3;
-np = 15;
+np = 6;
 nc = 4;
 Ts = delta;
 timescale = 6.5; % scaling factor such that each s in simulation is an hour
@@ -100,8 +100,8 @@ nlobj.Model.StateFcn = "Satellite";
 nlobj.Model.IsContinuousTime = true;
 nlobj.Model.OutputFcn = @(x,u,Ts) [x(1);x(2);x(3); x(4);x(5);x(6)];
 nlobj.Model.NumberOfParameters = 1;
-% nlobj.Weights.OutputVariables = [1 1 1 0 0 0;10 10 10 0 0 0];
-nlobj.Weights.OutputVariables = [10 10 10 0 0 0];
+nlobj.Weights.OutputVariables = [1 1 1 0 0 0;10 10 10 1 1 1];  % scenario 3
+% nlobj.Weights.OutputVariables = [10 10 10 0 0 0];
 nlobj.Weights.ManipulatedVariablesRate = r*[1 1 1];% try to play with weights 
 if sat_constraint == 1
     nlobj.ManipulatedVariables(1).Max = satValue;
@@ -124,8 +124,10 @@ sim('MPCHalo.slx');
 xmpc = ans.x;
 refmpc = ans.xr;
 n_refmpc = ans.n_ref;
-ympc = ans.y*distanceScale;
-ysr = ans.ysr*distanceScale;
+% ympc = ans.y*distanceScale;
+% ysr = ans.ysr*distanceScale;
+ympc = ans.y;
+ysr = ans.ysr;
 zmpc = ans.z;
 vmpc = ans.v;
 umpc = ans.u;
@@ -144,9 +146,11 @@ l = title('Proposed MR MPC');
 set(l,'Interpreter','Latex');
 plot3(ympc(:,1),ympc(:,2), ympc(:,3), 'r', 'LineWidth', 1.5);
 hold on; grid on;
-plot3(refmpc(:,1)*distanceScale,refmpc(:,2)*distanceScale, refmpc(:,3)*distanceScale, 'b--', 'LineWidth', 1.5);
-plot3(n_refmpc(:,1)*distanceScale,n_refmpc(:,2)*distanceScale, n_refmpc(:,3)*distanceScale, 'k', 'LineWidth', 1.5);
-scatter3(L2*distanceScale,0,0,'b','diamond');
+% plot3(refmpc(:,1)*distanceScale,refmpc(:,2)*distanceScale, refmpc(:,3)*distanceScale, 'b--', 'LineWidth', 1.5);
+plot3(refmpc(:,1),refmpc(:,2), refmpc(:,3), 'b--', 'LineWidth', 1.5);
+% plot3(n_refmpc(:,1)*distanceScale,n_refmpc(:,2)*distanceScale, n_refmpc(:,3)*distanceScale, 'k', 'LineWidth', 1.5);
+plot3(n_refmpc(:,1),n_refmpc(:,2), n_refmpc(:,3), 'k', 'LineWidth', 1.5);
+scatter3(L2,0,0,'b','diamond');
 % plot3(xe1, xe2, xe3, 'k', 'LineWidth', 2);
 l = xlabel('$x$');
 set(l,'Interpreter','Latex');
@@ -156,7 +160,8 @@ l = zlabel('$z$');
 set(l,'Interpreter','Latex');
 l = legend('$x(t), y(t), z(t)$- MR MPC trajectory','$x(t), y(t), z(t)$- Planned trajectory','$x(t), y(t), z(t)$- nominal reference', 'L2 point' );
 set(l,'Interpreter','Latex');
-set(l,'Interpreter','Latex');
+l = xlabel('3D plot dimensionless'); 
+l.FontSize = 18;
 
 
 subplot(2,2,2);
@@ -177,7 +182,7 @@ l = title('Norm of the error');
 set(l,'Interpreter','Latex');
 plot(ts*timescale, e_rms_mpc, 'r', 'LineWidth', 1.5);
 hold on; grid on;
-l = legend('MR MPC $\|e(t)\|$ km');
+l = legend('MR MPC $\|e(t)\|$');
 set(l,'Interpreter','Latex');
 l = xlabel('Time (h)'); 
 l.FontSize = 18;
@@ -188,7 +193,7 @@ l = title('Control effort magnitutde');
 set(l,'Interpreter','Latex');
 plot(t*timescale, norm_umpc, 'k', 'LineWidth', 1.5);
 hold on; grid on;
-l = legend('MR MPC  $\|u\|(t)$');
+l = legend('MR MPC  $\|u(t)\|$');
 set(l,'Interpreter','Latex');
 l = xlabel('Time (h)'); 
 l.FontSize = 18;

@@ -29,6 +29,8 @@ v = sym('v',[3 1]);
 z = sym('z', [4 1]);
 w = sym('w', [4 1]);
 
+eta = sym('eta',[6 1]);
+
 %% linear analytic control model
 x1 = x(1:3);
 x2 = x(4:6);
@@ -108,3 +110,20 @@ f2cl = simplify(f2cl);
 
 f2clreal = f2real - f2reg - Preg*Tz*wz - Tr*S2^2*wr - v;
 f2clreal = simplify(f2clreal);
+
+
+%% In error coordinates
+% f2cleta = subs(f2clreal,x(1)-x_1reg,eta);
+% f2cleta = simplify(f2cleta);
+% f2cleta = subs(f2cleta,x(2)-x_2reg,eta);
+% f2cleta = simplify(f2cleta);
+% f2cleta = subs(f2cleta,x(3)-x_3reg,eta);
+% f2cleta = simplify(f2cleta);
+% f2cleta = subs(f2cleta,x(4)-xd_1reg,eta);
+% f2cleta = simplify(f2cleta);
+% f2cleta = subs(f2cleta,x(5)-xd_2reg,eta);
+% f2cleta = simplify(f2cleta);
+% f2cleta = subs(f2cleta,x(6)-pi(6),eta);
+% f2cleta = simplify(f2cleta);
+f2cleta = subs(f2clreal,x-pi,eta);
+f2cleta = simplify(f2cleta);

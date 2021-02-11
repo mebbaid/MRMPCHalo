@@ -4,10 +4,10 @@ clc
 clear all
 
 %% set case to be simulated
-delta = 0.05; % adjust for hours (0.15 is one hour) (0.01 = 4 minutes)
+delta = 0.1; % adjust for hours (0.15 is one hour) (0.01 = 4 minutes)
 % delta_b = delta/2;
 saturation = 1; % set to one to incorporate saturation on the control.
-sat_constraint = 0; % set to one to include saturation as as a constraint in MPC formulation
+sat_constraint = 1; % set to one to include saturation as as a constraint in MPC formulation
 disturbance = 1;  % set to one to incoporate disturbances
 srp         = 1; % 
 delay = 0; % put to one to include effect of delay
@@ -17,7 +17,7 @@ else
     satValue = inf;
 end
 
-r = 0.0; % control penalty if consistent penalty on three controls is required
+r = 0.1; % control penalty if consistent penalty on three controls is required
 
 %% models parameters and init conditions
 L2 = 1.1556;
@@ -83,7 +83,7 @@ K = place(A,G,pole);
 nx = 6;
 ny = 6;  % outputs are x,y directly
 nu = 3;
-np = 15;
+np = 6;
 nc = 4;
 Ts = delta;
 timescale = 6.5; % scaling factor such that each s in simulation is an hour
@@ -105,7 +105,7 @@ nlobjsr.Model.StateFcn = "Satellite";
 nlobjsr.Model.IsContinuousTime = true;
 nlobjsr.Model.OutputFcn = @(x,u,Ts) [x(1);x(2);x(3); x(4);x(5);x(6)];
 nlobjsr.Model.NumberOfParameters = 1;
-nlobjsr.Weights.OutputVariables = [10 10 10 0 0 0];
+nlobjsr.Weights.OutputVariables = [10 10 10 1 1 1];
 nlobjsr.Weights.ManipulatedVariablesRate = r*[1 1 1];% try to play with weights
 if sat_constraint == 1
     nlobjsr.ManipulatedVariables(1).Max = satValue;
@@ -127,11 +127,12 @@ ts = 0:delta:simTime;
 sim('HaloMPCMatlab.slx');
 xsr = ans.x;
 refsr = ans.xr;
-ysr = ans.y*distanceScale;
+% ysr = ans.y*distanceScale;
+ysr = ans.y;
 zsr = ans.z;
 vsr = ans.v;
 usr= ans.u;
-esr = ans.error*errorScale;
+esr = ans.error;
 e_rms_sr = ans.e_rms;
 deltaVsr = ans.DeltaV;
 srmpcstatus = ans.srmpcstatus;
@@ -147,8 +148,9 @@ l = title('Proposed MR MPC');
 set(l,'Interpreter','Latex');
 plot3(ysr(:,1),ysr(:,2), ysr(:,3), 'r', 'LineWidth', 1.5);
 hold on; grid on;
-plot3(refsr(:,1)*distanceScale,refsr(:,2)*distanceScale, refsr(:,3)*distanceScale, 'k', 'LineWidth', 1.5);
-scatter3(L2*distanceScale,0,0,'b','diamond');
+% plot3(refsr(:,1)*distanceScale,refsr(:,2)*distanceScale, refsr(:,3)*distanceScale, 'k', 'LineWidth', 1.5);
+plot3(refsr(:,1),refsr(:,2), refsr(:,3), 'k', 'LineWidth', 1.5);
+scatter3(L2,0,0,'b','diamond');
 % plot3(xe1, xe2, xe3, 'k', 'LineWidth', 2);
 l = xlabel('$x$');
 set(l,'Interpreter','Latex');
@@ -158,7 +160,8 @@ l = zlabel('$z$');
 set(l,'Interpreter','Latex');
 l = legend('$x(t), y(t), z(t)$- NMPC trajectory','$x(t), y(t), z(t)$- nominal reference', 'L2 point' );
 set(l,'Interpreter','Latex');
-set(l,'Interpreter','Latex');
+l = xlabel('3D plot dimensionless'); 
+l.FontSize = 18;
 
 
 subplot(2,2,2);
@@ -177,9 +180,9 @@ l.FontSize = 18;
 subplot(2,2,3);
 l = title('Norm of the error');
 set(l,'Interpreter','Latex');
-plot(ts*timescale, e_rms_sr, 'r', 'LineWidth', 1.5);
+plot(t*timescale, e_rms_sr, 'r', 'LineWidth', 1.5);
 hold on; grid on;
-l = legend('NMPC $\|e(t)\|$ km');
+l = legend('NMPC $\|e(t)\|$');
 set(l,'Interpreter','Latex');
 l = xlabel('Time (h)'); 
 l.FontSize = 18;
@@ -190,7 +193,7 @@ l = title('Control effort magnitutde');
 set(l,'Interpreter','Latex');
 plot(t*timescale, deltaVsr, 'k', 'LineWidth', 1.5);
 hold on; grid on;
-l = legend('NMPC  $\|u\|(t)$');
+l = legend('NMPC  $\|u(t)\|$');
 set(l,'Interpreter','Latex');
 l = xlabel('Time (h)'); 
 l.FontSize = 18;
