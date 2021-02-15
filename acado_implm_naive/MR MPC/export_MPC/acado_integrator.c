@@ -380,10 +380,10 @@ b[5] = acadoWorkspace.rk_dim6_bPerm[5];
 
 /** Column vector of size: 1 */
 static const real_t acado_Ah_mat[ 1 ] = 
-{ 1.6666666666666666e-02 };
+{ 5.0000000000000003e-02 };
 
 
-/* Fixed step size:0.0333333 */
+/* Fixed step size:0.1 */
 int acado_integrate( real_t* const rk_eta, int resetIntegrator )
 {
 int error;
@@ -407,22 +407,8 @@ acadoWorkspace.rk_xxx[10] = rk_eta[64];
 acadoWorkspace.rk_xxx[11] = rk_eta[65];
 acadoWorkspace.rk_xxx[12] = rk_eta[66];
 
-for (run = 0; run < 3; ++run)
+for (run = 0; run < 1; ++run)
 {
-if( run > 0 ) {
-for (i = 0; i < 6; ++i)
-{
-acadoWorkspace.rk_diffsPrev2[i * 9] = rk_eta[i * 6 + 6];
-acadoWorkspace.rk_diffsPrev2[i * 9 + 1] = rk_eta[i * 6 + 7];
-acadoWorkspace.rk_diffsPrev2[i * 9 + 2] = rk_eta[i * 6 + 8];
-acadoWorkspace.rk_diffsPrev2[i * 9 + 3] = rk_eta[i * 6 + 9];
-acadoWorkspace.rk_diffsPrev2[i * 9 + 4] = rk_eta[i * 6 + 10];
-acadoWorkspace.rk_diffsPrev2[i * 9 + 5] = rk_eta[i * 6 + 11];
-acadoWorkspace.rk_diffsPrev2[i * 9 + 6] = rk_eta[i * 3 + 42];
-acadoWorkspace.rk_diffsPrev2[i * 9 + 7] = rk_eta[i * 3 + 43];
-acadoWorkspace.rk_diffsPrev2[i * 9 + 8] = rk_eta[i * 3 + 44];
-}
-}
 if( resetIntegrator ) {
 for (i = 0; i < 1; ++i)
 {
@@ -545,7 +531,7 @@ acadoWorkspace.rk_diffK[i + 5] = acadoWorkspace.rk_b[i * 6 + 5];
 for (i = 0; i < 6; ++i)
 {
 acadoWorkspace.rk_diffsNew2[(i * 9) + (run1)] = (i == run1-0);
-acadoWorkspace.rk_diffsNew2[(i * 9) + (run1)] += + acadoWorkspace.rk_diffK[i]*(real_t)3.3333333333333333e-02;
+acadoWorkspace.rk_diffsNew2[(i * 9) + (run1)] += + acadoWorkspace.rk_diffK[i]*(real_t)1.0000000000000001e-01;
 }
 }
 for (run1 = 0; run1 < 3; ++run1)
@@ -571,16 +557,15 @@ acadoWorkspace.rk_diffK[i + 5] = acadoWorkspace.rk_b[i * 6 + 5];
 }
 for (i = 0; i < 6; ++i)
 {
-acadoWorkspace.rk_diffsNew2[(i * 9) + (run1 + 6)] = + acadoWorkspace.rk_diffK[i]*(real_t)3.3333333333333333e-02;
+acadoWorkspace.rk_diffsNew2[(i * 9) + (run1 + 6)] = + acadoWorkspace.rk_diffK[i]*(real_t)1.0000000000000001e-01;
 }
 }
-rk_eta[0] += + acadoWorkspace.rk_kkk[0]*(real_t)3.3333333333333333e-02;
-rk_eta[1] += + acadoWorkspace.rk_kkk[1]*(real_t)3.3333333333333333e-02;
-rk_eta[2] += + acadoWorkspace.rk_kkk[2]*(real_t)3.3333333333333333e-02;
-rk_eta[3] += + acadoWorkspace.rk_kkk[3]*(real_t)3.3333333333333333e-02;
-rk_eta[4] += + acadoWorkspace.rk_kkk[4]*(real_t)3.3333333333333333e-02;
-rk_eta[5] += + acadoWorkspace.rk_kkk[5]*(real_t)3.3333333333333333e-02;
-if( run == 0 ) {
+rk_eta[0] += + acadoWorkspace.rk_kkk[0]*(real_t)1.0000000000000001e-01;
+rk_eta[1] += + acadoWorkspace.rk_kkk[1]*(real_t)1.0000000000000001e-01;
+rk_eta[2] += + acadoWorkspace.rk_kkk[2]*(real_t)1.0000000000000001e-01;
+rk_eta[3] += + acadoWorkspace.rk_kkk[3]*(real_t)1.0000000000000001e-01;
+rk_eta[4] += + acadoWorkspace.rk_kkk[4]*(real_t)1.0000000000000001e-01;
+rk_eta[5] += + acadoWorkspace.rk_kkk[5]*(real_t)1.0000000000000001e-01;
 for (i = 0; i < 6; ++i)
 {
 for (j = 0; j < 6; ++j)
@@ -594,35 +579,8 @@ tmp_index2 = (j) + (i * 3);
 rk_eta[tmp_index2 + 42] = acadoWorkspace.rk_diffsNew2[(i * 9) + (j + 6)];
 }
 }
-}
-else {
-for (i = 0; i < 6; ++i)
-{
-for (j = 0; j < 6; ++j)
-{
-tmp_index2 = (j) + (i * 6);
-rk_eta[tmp_index2 + 6] = + acadoWorkspace.rk_diffsNew2[i * 9]*acadoWorkspace.rk_diffsPrev2[j];
-rk_eta[tmp_index2 + 6] += + acadoWorkspace.rk_diffsNew2[i * 9 + 1]*acadoWorkspace.rk_diffsPrev2[j + 9];
-rk_eta[tmp_index2 + 6] += + acadoWorkspace.rk_diffsNew2[i * 9 + 2]*acadoWorkspace.rk_diffsPrev2[j + 18];
-rk_eta[tmp_index2 + 6] += + acadoWorkspace.rk_diffsNew2[i * 9 + 3]*acadoWorkspace.rk_diffsPrev2[j + 27];
-rk_eta[tmp_index2 + 6] += + acadoWorkspace.rk_diffsNew2[i * 9 + 4]*acadoWorkspace.rk_diffsPrev2[j + 36];
-rk_eta[tmp_index2 + 6] += + acadoWorkspace.rk_diffsNew2[i * 9 + 5]*acadoWorkspace.rk_diffsPrev2[j + 45];
-}
-for (j = 0; j < 3; ++j)
-{
-tmp_index2 = (j) + (i * 3);
-rk_eta[tmp_index2 + 42] = acadoWorkspace.rk_diffsNew2[(i * 9) + (j + 6)];
-rk_eta[tmp_index2 + 42] += + acadoWorkspace.rk_diffsNew2[i * 9]*acadoWorkspace.rk_diffsPrev2[j + 6];
-rk_eta[tmp_index2 + 42] += + acadoWorkspace.rk_diffsNew2[i * 9 + 1]*acadoWorkspace.rk_diffsPrev2[j + 15];
-rk_eta[tmp_index2 + 42] += + acadoWorkspace.rk_diffsNew2[i * 9 + 2]*acadoWorkspace.rk_diffsPrev2[j + 24];
-rk_eta[tmp_index2 + 42] += + acadoWorkspace.rk_diffsNew2[i * 9 + 3]*acadoWorkspace.rk_diffsPrev2[j + 33];
-rk_eta[tmp_index2 + 42] += + acadoWorkspace.rk_diffsNew2[i * 9 + 4]*acadoWorkspace.rk_diffsPrev2[j + 42];
-rk_eta[tmp_index2 + 42] += + acadoWorkspace.rk_diffsNew2[i * 9 + 5]*acadoWorkspace.rk_diffsPrev2[j + 51];
-}
-}
-}
 resetIntegrator = 0;
-acadoWorkspace.rk_ttt += 3.3333333333333331e-01;
+acadoWorkspace.rk_ttt += 1.0000000000000000e+00;
 }
 for (i = 0; i < 6; ++i)
 {

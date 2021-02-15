@@ -12,7 +12,7 @@ else
 end
 %% PARAMETERS
 Ts = 0.1;
-EXPORT = 0;
+EXPORT = 1;
 mu = 0.012149;
 L2 = 1.556;
 insertion_error = 0; 
@@ -70,8 +70,8 @@ f_pred  = [ dot(xx) == xxd; ...
            dot(xzd) == -(1-mu)*xz/absed1^3 - mu*xz/absed2^3 + uz];% SIMexport using CRTBP model for prediction
        
 acadoSet('problemname', 'sim_ertbp');
-numSteps = 3;
-sim = acado.SIMexport( 1e-5 );
+numSteps = 3; int_res = 1e-4;
+sim = acado.SIMexport( int_res);
 sim.setModel(f_expl);
 sim.set( 'INTEGRATOR_TYPE', 'INT_IRK_GL2' );
 sim.set( 'NUM_INTEGRATOR_STEPS', numSteps );
@@ -85,7 +85,7 @@ end
 
 %% MPCexport
 acadoSet('problemname', 'nmpc');
-Np = 6;
+Np = 20;
 ocp = acado.OCP( 0.0, Np*Ts, Np );
 h = [xx xy xz xxd xyd xzd ux uy uz];
 hN = [xx xy xz xxd xyd xzd]; % terminal penalty
@@ -102,7 +102,7 @@ mpc.set( 'SPARSE_QP_SOLUTION', 'FULL_CONDENSING_N2');
 mpc.set( 'LEVENBERG_MARQUARDT', 1e-5 );
 % mpc.set( 'INTEGRATOR_TYPE', 'INT_RK4' );
 mpc.set( 'INTEGRATOR_TYPE', 'INT_BDF' );
-mpc.set( 'NUM_INTEGRATOR_STEPS', numSteps*Np );
+mpc.set( 'NUM_INTEGRATOR_STEPS', 10 );
 mpc.set( 'QP_SOLVER', 'QP_QPOASES' );
 
 if EXPORT
@@ -137,8 +137,8 @@ input.u = Uref;
 input.y = [repmat(Xref,Np,1) Uref];
 % input.y = [xr(:,2:end)' Uref];
 input.yN = xr';
-input.W = diag([100 100 100 1 1 1 0 0 0]);
-input.WN = diag([10 10 10 10 10 10]); 
+input.W = 10^6*diag([10 10 10 10 10 10 0 0 0]);
+input.WN = diag([1 1 1 1 1 1]); 
 input.shifting.strategy = 1;
 
 % SIMULATION LOOP
@@ -156,32 +156,43 @@ input.od = od;
 dist = z0';
 
 cpu_eff = [];
-iterations = [];
+QPitr_MPC = [];
 
 while time(end) < sim_time
     tic
     % Solve NMPC OCP
     input.x0 = state_sim(end,:);
-    output = acado_MPCstep(input);
-    % Save the MPC step
-    INFO_MPC = [INFO_MPC; output.info];
-    KKT_MPC = [KKT_MPC; output.info.kktValue];
-    ValueFunc_MPC = [ValueFunc_MPC; output.info.objValue];
-    QPitr_MPC = [ValueFunc_MPC; output.info.QP_iter];
-    controls_MPC = [controls_MPC; output.u(1,:)];
-    input.x = output.x;
-    input.u = output.u;
+    if (mod(time(end),Ts) == 0)
+        output = acado_MPCstep(input);
+        % Save the MPC step
+        INFO_MPC = [INFO_MPC; output.info];
+        KKT_MPC = [KKT_MPC; output.info.kktValue];
+        ValueFunc_MPC = [ValueFunc_MPC; output.info.objValue];
+        QPitr_MPC = [QPitr_MPC; output.info.QP_iter];
+        controls_MPC = [controls_MPC; output.u(1,:)];
+        input.x = output.x;
+        input.u = output.u;
+        sim_input.x = state_sim(end,:).';
+        sim_input.u = output.u(1,:).';
+        sim_input.od = od(1,1:3)';   % only the first three terms of dist appear in pr 
+        disp(['current time: ' num2str(iter*int_res) ' ' char(9) ' (RTI step -- QP error: ' num2str(output.info.status) ',' ' ' char(2) ' KKT val: ' num2str(output.info.kktValue,'% 1.2e') ',' ' ' char(2) ' CPU time: ' num2str(round(output.info.cpuTime*1e6)) ' µs)'])
+        cpu_eff = [cpu_eff output.info.cpuTime*1e6];
+    else
+        % Save the MPC step
+        controls_MPC = [controls_MPC; input.u(1,:)];
+        sim_input.x = state_sim(end,:).';
+        sim_input.u = input.u(1,:).';
+        sim_input.od = od(1,1:3)';   % only the first three terms of dist appear in pr 
+    end    
     % Simulate system
-    sim_input.x = state_sim(end,:).';
-    sim_input.u = output.u(1,:).';
-    sim_input.od = od(1,1:3)';   % only the first three terms of dist appear in pr
     states = integrate_ertbp(sim_input);
     state_sim = [state_sim; states.value']; 
     iter = iter+1;
-    nextTime = iter*Ts;
-    disp(['current time: ' num2str(nextTime) ' ' char(9) ' (RTI step -- QP error: ' num2str(output.info.status) ',' ' ' char(2) ' KKT val: ' num2str(output.info.kktValue,'% 1.2e') ',' ' ' char(2) ' CPU time: ' num2str(round(output.info.cpuTime*1e6)) ' µs)'])
-    cpu_eff = [cpu_eff output.info.cpuTime*1e6];
-    iterations = [iterations output.info.QP_iter];
+%     nextTime = iter*Ts;
+    nextTime = iter*int_res;
+%     disp(['current time: ' num2str(nextTime) ' ' char(9) ' (RTI step -- QP error: ' num2str(output.info.status) ',' ' ' char(2) ' KKT val: ' num2str(output.info.kktValue,'% 1.2e') ',' ' ' char(2) ' CPU time: ' num2str(round(output.info.cpuTime*1e6)) ' µs)'])
+%     cpu_eff = [cpu_eff output.info.cpuTime*1e6];
+%     iterations = [iterations output.info.QP_iter];
     % update reference
     xr = ref_gen(nextTime,k,c,Omega, Omega_z, Seq, Ts);
     if (mod(nextTime,2*Ts) == 0)
@@ -205,24 +216,8 @@ while time(end) < sim_time
 end
 
 
-% 
-% figure;
-% plot(time, dist(1,:), 'r','LineWidth' , 2 );
-% hold on; grid on;
-% plot(time, dist(2,:), 'b','LineWidth' , 2 );
-% plot(time, dist(3,:), 'k','LineWidth' , 2 );
-% xlabel('time(s)')
-% ylabel('Perturbation')
-% 
-% figure;
-% semilogy(time(1:end-1), ValueFunc_MPC, ':bx');
-% xlabel('time(s)')
-% ylabel('Obj Value')
-
-
-
 figure('Name','RTI MR MPC');
-subplot(1,2,1);
+subplot(2,2,1);
 l = title('3D plot of trajectory under regulation');
 set(l,'Interpreter','Latex');
 plot3(pos_ref(:,1), pos_ref(:,2), pos_ref(:,3), 'k', 'LineWidth' , 2)
@@ -236,37 +231,26 @@ l = xlabel('3D plot dimensionless');
 l.FontSize = 18;
 
 
-subplot(1,2,2);
+subplot(2,2,2)
+l = title('Controls');
+set(l,'Interpreter','Latex');
+plot(time(1:end-1),controls_MPC(:,1), 'k', 'LineWidth', 1.5);
+hold on; grid on;
+plot(time(1:end-1), controls_MPC(:,2), 'r', 'LineWidth', 1.5);
+plot(time(1:end-1), controls_MPC(:,3), 'b', 'LineWidth', 1.5);
+l = legend('RTI MR MPC $u_1(t)$', 'RTI MR MPC $u_2(t)$', 'RTI MR MPC $u_3(t)$');
+set(l,'Interpreter','Latex');
+l = xlabel('Time (h)'); 
+l.FontSize = 18;
+
+subplot(2,2,3);
 l = title('cpu time');
 set(l,'Interpreter','Latex');
 % plot(time(1:end-1), cpu_eff, 'b', 'LineWidth', 1.5);
-bar(time(1:end-1),cpu_eff);
-l = xlabel('Time');
+bar(cpu_eff);
+l = xlabel('Sampling instant');
 set(l,'Interpreter','Latex');
 l = ylabel('$\mu$ s');
 set(l,'Interpreter','Latex');
 
 
-% subplot(2,2,2)
-% l = title('Controls');
-% set(l,'Interpreter','Latex');
-% plot(time, [0; controls_MPC(:,1)], 'k', 'LineWidth', 1.5);
-% hold on; grid on;
-% plot(time, [0; controls_MPC(:,2)], 'r', 'LineWidth', 1.5);
-% plot(time, [0; controls_MPC(:,3)], 'b', 'LineWidth', 1.5);
-% l = legend('RTI MR MPC $u_1(t)$', 'RTI MR MPC $u_2(t)$', 'RTI MR MPC $u_3(t)$');
-% set(l,'Interpreter','Latex');
-% l = xlabel('Time'); 
-% l.FontSize = 18;
-
-
-% subplot(2,2,4);
-% l = title('Control effort magnitutde');
-% set(l,'Interpreter','Latex');
-% plot(t*timescale, norm_ureg, 'k', 'LineWidth', 1.5);
-% hold on; grid on;
-% l = legend('Nonlinear regulation $\|u(t)\|$');
-% set(l,'Interpreter','Latex');
-% l = xlabel('Time (h)'); 
-% l.FontSize = 18;
-% hold off;

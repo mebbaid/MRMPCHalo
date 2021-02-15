@@ -25,7 +25,7 @@
 
 /* SOME CONVENIENT DEFINTIONS: */
 /* --------------------------------------------------------------- */
-   #define h           0.1      /* length of one simulation interval   */
+   #define h           0.0001      /* length of one simulation interval   */
    #define RESULTS_NAME	  "results.txt"
    #define REF_NAME  "ref.txt"
 /* --------------------------------------------------------------- */
