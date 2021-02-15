@@ -24,6 +24,12 @@ Omega = 1.8636;
 Omega_z = Omega; 
 a = zeros(2,1); b = zeros(2,1); a(1) = -1; a(2) = 1/2; b(1) = 2; b(2) = 5/2;
 phi = 0; sim_time = 15;
+% srp parameters
+Gsc = 1360.8 ; % approx kw
+sped = 300000; % approx m/s
+zeta = 0.9252 ;   % prep. on the space-craft
+
+
 
 DifferentialState xx xy xz xxd xyd xzd; % Differential States: states
 Control ux uy uz; % Control:
@@ -71,6 +77,8 @@ f_pred  = [ dot(xx) == xxd; ...
        
 acadoSet('problemname', 'sim_ertbp');
 numSteps = 3; int_res = 1e-4;
+tim = 0:int_res:sim_time;
+SRP = (Gsc/sped)*cos(zeta*tim);
 sim = acado.SIMexport( int_res);
 sim.setModel(f_expl);
 sim.set( 'INTEGRATOR_TYPE', 'INT_IRK_GL2' );
@@ -129,6 +137,7 @@ diffho1 = [(k*(1-c(1)+Omega^2)/2)*sin(Omega*0);
                -Omega_z*k*sin(Omega_z*0)];
 
 xr = Seq + [ho1;diffho1];
+x0 = xr';
 Xref      = xr';
 input.x = [repmat(X0,Np/2,1); repmat(Xref,Np/2+1,1)];
 input.od = [];
@@ -137,7 +146,7 @@ input.u = Uref;
 input.y = [repmat(Xref,Np,1) Uref];
 % input.y = [xr(:,2:end)' Uref];
 input.yN = xr';
-input.W = 10^6*diag([10 10 10 10 10 10 0 0 0]);
+input.W = 10^6*diag([10 10 10 1 1 1 0 0 0]);
 input.WN = diag([1 1 1 1 1 1]); 
 input.shifting.strategy = 1;
 
@@ -217,7 +226,7 @@ end
 
 
 figure('Name','RTI MR MPC');
-subplot(2,2,1);
+subplot(1,2,1);
 l = title('3D plot of trajectory under regulation');
 set(l,'Interpreter','Latex');
 plot3(pos_ref(:,1), pos_ref(:,2), pos_ref(:,3), 'k', 'LineWidth' , 2)
@@ -231,19 +240,19 @@ l = xlabel('3D plot dimensionless');
 l.FontSize = 18;
 
 
-subplot(2,2,2)
-l = title('Controls');
-set(l,'Interpreter','Latex');
-plot(time(1:end-1),controls_MPC(:,1), 'k', 'LineWidth', 1.5);
-hold on; grid on;
-plot(time(1:end-1), controls_MPC(:,2), 'r', 'LineWidth', 1.5);
-plot(time(1:end-1), controls_MPC(:,3), 'b', 'LineWidth', 1.5);
-l = legend('RTI MR MPC $u_1(t)$', 'RTI MR MPC $u_2(t)$', 'RTI MR MPC $u_3(t)$');
-set(l,'Interpreter','Latex');
-l = xlabel('Time (h)'); 
-l.FontSize = 18;
+% subplot(2,2,2)
+% l = title('Controls');
+% set(l,'Interpreter','Latex');
+% plot(time(1:end-1),controls_MPC(:,1), 'k', 'LineWidth', 1.5);
+% hold on; grid on;
+% plot(time(1:end-1), controls_MPC(:,2), 'r', 'LineWidth', 1.5);
+% plot(time(1:end-1), controls_MPC(:,3), 'b', 'LineWidth', 1.5);
+% l = legend('RTI MR MPC $u_1(t)$', 'RTI MR MPC $u_2(t)$', 'RTI MR MPC $u_3(t)$');
+% set(l,'Interpreter','Latex');
+% l = xlabel('Time (h)'); 
+% l.FontSize = 18;
 
-subplot(2,2,3);
+subplot(1,2,2);
 l = title('cpu time');
 set(l,'Interpreter','Latex');
 % plot(time(1:end-1), cpu_eff, 'b', 'LineWidth', 1.5);

@@ -17,9 +17,8 @@ else
     satValue = inf;
 end
 
-r = 0.0; % control penalty if consistent penalty on three controls is required
 planner_type = 0; % select planner model (set to 0 for feedback lin vs 1 for regu).
-
+r = 0.0; % control penalty if consistent penalty on three controls is required
 
 %% models parameters and init conditions
 L2 = 1.1556;
