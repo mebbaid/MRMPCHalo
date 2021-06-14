@@ -127,7 +127,7 @@ for i=0:delta:simTime
    xr    = zeros(nx,1);
    x0         = x;
    PolyNmpciter = [PolyNmpciter fminconoutput.iterations];
-%    u0         = ct;  %not always wise to initialize fmincon with prev control, might get stuck on unfeasible solution
+   u0         = ct;  %not always wise to initialize fmincon with prev control, might get stuck on unfeasible solution
 end
 
 

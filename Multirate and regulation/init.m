@@ -4,10 +4,10 @@ clear all
 %% set case to be simulated
 delta = 0.05; % adjust for hours (0.15 is one hour) (0.01 = 4 minutes)
 % delta_b = delta/2;
-saturation = 0; % set to one to incorporate saturation on the control.
+saturation = 1; % set to one to incorporate saturation on the control.
 sat_constraint = 0; % set to one to include saturation as as a constraint in MPC formulation
-disturbance = 0;  % set to one to incoporate disturbances
-srp         = 0; % solar radiation pressure
+disturbance = 1;  % set to one to incoporate disturbances
+srp         = 1; % solar radiation pressure
 emulation =delta; % put emulation = delta to simulate emulated control for FL
 delay = 0; % put to one to include effect of delay
 if saturation == 1
@@ -81,7 +81,7 @@ A = [zeros(3) eye(3); A21 A22];
 G = [zeros(3); eye(3)];
 K = place(A,G,pole);
 
-simTime = 15; % set to 4380 for long term 6 months station keeping
+simTime = 100; % set to 4380 for long term 6 months station keeping
 ref_select = 1;  % set to 1 for L2 orbit, set to 2 for to consider also effects of eccentricity
 t = 0:10^-3:simTime;
 ts = 0:delta:simTime;

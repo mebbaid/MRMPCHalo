@@ -2,11 +2,11 @@ clc
 clear all
 
 %% set case to be simulated
-delta = 0.1; % adjust for hours (0.15 is one hour) (0.01 = 4 minutes)
+delta = 0.25; % adjust for hours (0.15 is one hour) (0.01 = 4 minutes)
 % delta_b = delta/2;
-saturation = 1; % set to one to incorporate saturation on the control.
-disturbance = 1;  % set to one to incoporate disturbances
-srp         = 1; % solar radiation pressure
+saturation = 0; % set to one to incorporate saturation on the control.
+disturbance = 0;  % set to one to incoporate disturbances
+srp         = 0; % solar radiation pressure
 emulation = delta; % put emulation = delta to simulate emulated control for FL
 delay = 0; % put to one to include effect of delay
 if saturation == 1
@@ -68,10 +68,11 @@ diffho1 = [(k*(1-c(1)+Omega^2)/2)*sin(Omega*0);
            Omega*k*cos(Omega*0);
            -Omega_z*k*sin(Omega_z*0)];
       
-x0 = Seq + [ho1;diffho1];
+% x0 = Seq + [ho1;diffho1];
 
 % feedback linearization and pole placement if activated
 pole = [-2 -1.5 -3 -2.5 -3.1 -2.6];
+% A21 = [1+2*c(2) 0 0; 0 1-c(2) 0; 0 0 0-c(2)];
 A21 = [1+2*c(1) 0 0; 0 1-c(1) 0; 0 0 0-c(1)];
 A22 = [0 2 0; -2 0 0; 0 0 0];
 % A = [zeros(3) eye(3); zeros(3) zeros(3)];

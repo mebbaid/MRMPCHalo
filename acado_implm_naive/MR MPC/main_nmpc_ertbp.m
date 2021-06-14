@@ -5,17 +5,19 @@ clear all; close all;
 perturbed = 1;  % simulate perturbations
 
 if perturbed == 1
-    e   =  0.0549;  % EM rotating system e
+    e   =  0.0549;  % EM rotating system eccentricity
 else
-    e   = 0;
-    
+    e   = 0;    
 end
+
+
 %% PARAMETERS
+sim_time = 15;
 Ts = 0.1;
 EXPORT = 1;
 mu = 0.012149;
 L2 = 1.556;
-insertion_error = 0; 
+insertion_error = -0.1;   % orbit insertion error for initialization
 c = zeros(2,1); c(1) = (1-mu)/(L2 + mu)^3 + mu/(L2 - 1 + mu)^3; c(2) = 1/(L2 + mu)^3 - 1/(L2 - 1 + mu)^3;
 h = zeros(2,1); h(1) = -1/(2*c(1)*(1-c(1)))*((2-c(1))*4*(L2-2*c(2)*mu*(1-mu))-4*L2);
 h(2) = -1/(2*c(1)*(1-c(1)))*(-2*(4*L2-2*c(2)*mu*(1-mu))+4*L2*(1+c(1)));
@@ -23,7 +25,7 @@ k = 0.1;
 Omega = 1.8636;
 Omega_z = Omega; 
 a = zeros(2,1); b = zeros(2,1); a(1) = -1; a(2) = 1/2; b(1) = 2; b(2) = 5/2;
-phi = 0; sim_time = 15;
+phi = 0; 
 % srp parameters
 Gsc = 1360.8 ; % approx kw
 sped = 300000; % approx m/s
@@ -33,9 +35,9 @@ zeta = 0.9252 ;   % prep. on the space-craft
 
 DifferentialState xx xy xz xxd xyd xzd; % Differential States: states
 Control ux uy uz; % Control:
-OnlineData  z1 z2 z3 z4
+OnlineData  z1 z2 z3 z4;  % online data for perturbation
 
-%% Differential Equation
+%% Differential Equation and integrator setting
 d1r = [-mu/(1-mu);0;0];
 d2r = [1-mu;0;0];
 ed1 = [xx;xy;xz] - d1r;
@@ -76,7 +78,7 @@ f_pred  = [ dot(xx) == xxd; ...
            dot(xzd) == -(1-mu)*xz/absed1^3 - mu*xz/absed2^3 + uz];% SIMexport using CRTBP model for prediction
        
 acadoSet('problemname', 'sim_ertbp');
-numSteps = 3; int_res = 1e-4;
+numSteps = 3; int_res = 1e-4;  
 tim = 0:int_res:sim_time;
 SRP = (Gsc/sped)*cos(zeta*tim);
 sim = acado.SIMexport( int_res);
@@ -101,7 +103,8 @@ W = acado.BMatrix(eye(length(h)));
 WN = acado.BMatrix(eye(length(hN))); % terminal penalty weights
 ocp.minimizeLSQ( W, h );
 ocp.minimizeLSQEndTerm( WN, hN );
-ocp.setModel(f_pred);
+% ocp.setModel(f_pred);
+ocp.setModel(f_expl);
 mpc = acado.OCPexport( ocp );
 % mpc.set( 'MAX_NUM_ITERATIONS',30 );
 mpc.set( 'HESSIAN_APPROXIMATION', 'GAUSS_NEWTON' );
