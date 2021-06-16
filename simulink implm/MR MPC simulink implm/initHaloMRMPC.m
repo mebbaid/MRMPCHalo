@@ -17,7 +17,7 @@ else
     satValue = inf;
 end
 
-planner_type = 0; % select planner model (set to 0 for feedback lin vs 1 for regu).
+planner_type = 1; % select planner model (set to 0 for feedback lin vs 1 for regu).
 r = 0.0; % control penalty if consistent penalty on three controls is required
 
 %% models parameters and init conditions
@@ -29,10 +29,11 @@ c(2) = 1/(L2 + mu)^3 - 1/(L2 - 1 + mu)^3;
 h = zeros(2,1);
 h(1) = -1/(2*c(1)*(1-c(1)))*((2-c(1))*4*(L2-2*c(2)*mu*(1-mu))-4*L2);
 h(2) = -1/(2*c(1)*(1-c(1)))*(-2*(4*L2-2*c(2)*mu*(1-mu))+4*L2*(1+c(1)));
-k = 0.1; 
+k = 0.02; 
 
-Omega = 1.8636;
+Omega = 1.8636; %in-plane frequency
 Omega_z = Omega; 
+% Omega_z = 1.79; %out-of-plane frequency
 Rotate_w = 0.1;
 
 a = zeros(2,1);
@@ -85,7 +86,7 @@ nx = 6;
 ny = 6;  % outputs are x,y directly
 nu = 3;
 np = 6;
-nc = 4;
+nc = np;
 Ts = delta;
 timescale = 6.5; % scaling factor such that each s in simulation is an hour
 distanceScale = 384400; % distance between two primaries
@@ -102,7 +103,7 @@ nlobj.Model.IsContinuousTime = true;
 nlobj.Model.OutputFcn = @(x,u,Ts) [x(1);x(2);x(3); x(4);x(5);x(6)];
 nlobj.Model.NumberOfParameters = 1;
 % nlobj.Weights.OutputVariables = [1 1 1 0 0 0;10 10 10 1 1 1];  % scenario 2 
-nlobj.Weights.OutputVariables = [10 10 10 1 1 1];
+nlobj.Weights.OutputVariables = [1 1 1 1 1 1];
 nlobj.Weights.ManipulatedVariablesRate = r*[1 1 1];% try to play with weights 
 if sat_constraint == 1
     nlobj.ManipulatedVariables(1).Max = satValue;
@@ -116,7 +117,7 @@ validateFcns(nlobj,x0,u0,[],{Ts});
 createParameterBus(nlobj,'MPCHalo/Nonlinear MPC Controller','myBusObject',{Ts});
 
 %% Simulation 
-simTime = 10; % set to 4380 for long term 6 months station keeping
+simTime = 20; % set to 4380 for long term 6 months station keeping
 ref_select = 1;  % set to 1 for L2 orbit, set to 2 for to consider also effects of eccentricity
 t = 0:10^-3:simTime;
 ts = 0:delta:simTime;

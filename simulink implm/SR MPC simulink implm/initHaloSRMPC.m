@@ -6,8 +6,8 @@ clear all
 %% set case to be simulated
 delta = 0.1; % adjust for hours (0.15 is one hour) (0.01 = 4 minutes)
 % delta_b = delta/2;
-saturation = 1; % set to one to incorporate saturation on the control.
-sat_constraint = 1; % set to one to include saturation as as a constraint in MPC formulation
+saturation = 0; % set to one to incorporate saturation on the control.
+sat_constraint = 0; % set to one to include saturation as as a constraint in MPC formulation
 disturbance = 1;  % set to one to incoporate disturbances
 srp         = 1; % 
 delay = 0; % put to one to include effect of delay
@@ -17,7 +17,7 @@ else
     satValue = inf;
 end
 
-r = 0.0; % control penalty if consistent penalty on three controls is required
+r = 0.1; % control penalty if consistent penalty on three controls is required
 
 %% models parameters and init conditions
 L2 = 1.1556;
@@ -28,10 +28,11 @@ c(2) = 1/(L2 + mu)^3 - 1/(L2 - 1 + mu)^3;
 h = zeros(2,1);
 h(1) = -1/(2*c(1)*(1-c(1)))*((2-c(1))*4*(L2-2*c(2)*mu*(1-mu))-4*L2);
 h(2) = -1/(2*c(1)*(1-c(1)))*(-2*(4*L2-2*c(2)*mu*(1-mu))+4*L2*(1+c(1)));
-k = 0.1; 
+k = 0.02; 
 
 Omega = 1.8636;
 Omega_z = Omega; 
+% Omega_z = 1.79;
 Rotate_w = 0.1;
 
 a = zeros(2,1);
@@ -84,7 +85,7 @@ nx = 6;
 ny = 6;  % outputs are x,y directly
 nu = 3;
 np = 6;
-nc = 4;
+nc = np;
 Ts = delta;
 timescale = 6.5; % scaling factor such that each s in simulation is an hour
 distanceScale = 384400; % distance between two primaries
@@ -105,7 +106,7 @@ nlobjsr.Model.StateFcn = "Satellite";
 nlobjsr.Model.IsContinuousTime = true;
 nlobjsr.Model.OutputFcn = @(x,u,Ts) [x(1);x(2);x(3); x(4);x(5);x(6)];
 nlobjsr.Model.NumberOfParameters = 1;
-nlobjsr.Weights.OutputVariables = [10 10 10 1 1 1];
+nlobjsr.Weights.OutputVariables = [1 1 1 1 1 1];
 nlobjsr.Weights.ManipulatedVariablesRate = r*[1 1 1];% try to play with weights
 if sat_constraint == 1
     nlobjsr.ManipulatedVariables(1).Max = satValue;
