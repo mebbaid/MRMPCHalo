@@ -10,8 +10,8 @@ addpath('C:\Users\mohd-\Desktop\MRMPCHalo\feedback linearization and regulation'
 delta = 0.1; % adjust for hours (0.15 is one hour) (0.01 = 4 minutes)
 emulation  = delta; 
 % delta_b = delta/2;
-saturation = 1; % set to one to incorporate saturation on the control.
-sat_constraint = 1; % set to one to include saturation as as a constraint in MPC formulation
+saturation = 0; % set to one to incorporate saturation on the control.
+sat_constraint = 0; % set to one to include saturation as as a constraint in MPC formulation
 disturbance = 1;  % set to one to incoporate disturbances
 srp         = 1; % 
 delay = 0; % put to one to include effect of delay
@@ -22,7 +22,7 @@ else
 end
 
 planner_type = 0; % select planner model.
-r = 0.0; % control penalty if consistent penalty on three controls is required
+r = 0.1; % control penalty if consistent penalty on three controls is required
 
 %% models parameters and init conditions
 L2 = 1.1556;
@@ -33,7 +33,7 @@ c(2) = 1/(L2 + mu)^3 - 1/(L2 - 1 + mu)^3;
 h = zeros(2,1);
 h(1) = -1/(2*c(1)*(1-c(1)))*((2-c(1))*4*(L2-2*c(2)*mu*(1-mu))-4*L2);
 h(2) = -1/(2*c(1)*(1-c(1)))*(-2*(4*L2-2*c(2)*mu*(1-mu))+4*L2*(1+c(1)));
-k = 0.02; 
+k = 0.1; 
 
 Omega = 1.8636;
 Omega_z = Omega; 
@@ -107,7 +107,7 @@ nlobj.Model.IsContinuousTime = true;
 nlobj.Model.OutputFcn = @(x,u,Ts) [x(1);x(2);x(3); x(4);x(5);x(6)];
 nlobj.Model.NumberOfParameters = 1;
 % nlobj.Weights.OutputVariables = [1 1 1 0 0 0;10 10 10 1 1 1];  % scenario 2 
-nlobj.Weights.OutputVariables = [1 1 1 1 1 1];
+nlobj.Weights.OutputVariables = [10 10 10 1 1 1];
 nlobj.Weights.ManipulatedVariablesRate = r*[1 1 1];% try to play with weights 
 if sat_constraint == 1
     nlobj.ManipulatedVariables(1).Max = satValue;
@@ -133,7 +133,7 @@ nlobjsr.Model.IsContinuousTime = true;
 nlobjsr.Model.OutputFcn = @(x,u,Ts) [x(1);x(2);x(3); x(4);x(5);x(6)];
 nlobjsr.Model.NumberOfParameters = 1;
 % nlobj.Weights.OutputVariables = [1 1 1 0 0 0;10 10 10 1 1 1];  % scenario 2 
-nlobjsr.Weights.OutputVariables = [1 1 1 1 1 1];
+nlobjsr.Weights.OutputVariables = [10 10 10 1 1 1];
 nlobjsr.Weights.ManipulatedVariablesRate = r*[1 1 1];% try to play with weights 
 if sat_constraint == 1
     nlobjsr.ManipulatedVariables(1).Max = satValue;
@@ -150,7 +150,7 @@ createParameterBus(nlobjsr,'MPCHalo/Nonlinear MPC Controller','myBusObject',{Ts}
 
 
 %% Simulation 
-simTime = 25; % set to 4380 for long term 6 months station keeping
+simTime = 10; % set to 4380 for long term 6 months station keeping
 ref_select = 1;  % set to 1 for L2 orbit, set to 2 for to consider also effects of eccentricity
 t = 0:10^-3:simTime;
 ts = 0:delta:simTime;
@@ -210,7 +210,7 @@ yreg = ans.yreg;
 zreg = ans.zreg;
 ureg = ans.ureg;
 
-e_rms_fl = ans.e_rms;
+e_rms_fl = ans.e_rms_fl;
 e_rms_reg = ans.e_rms_reg;
 
 e_fl = ans.error2;
@@ -222,12 +222,12 @@ norm_ureg = ans.DeltaV_reg;
 clear ans;
 
 
-figure('Name','Comparasions');
-subplot(3,3,1);
-plot3(reffl(:,1), reffl(:,2), reffl(:,3), 'k', 'LineWidth', 1.5);
+figure('Name','Trajectories');
+subplot(2,2,1);
+plot3(reffl(:,1), reffl(:,2), reffl(:,3), 'k', 'LineWidth', 3);
 hold on; grid on;
-mr = plot3(ympc(:,1),ympc(:,2), ympc(:,3), 'b', 'LineWidth', 1);
-sr = plot3(ysr(:,1),ysr(:,2), ysr(:,3), 'r','LineWidth', 1);
+mr = plot3(ympc(:,1),ympc(:,2), ympc(:,3), 'b', 'LineWidth', 3);
+sr = plot3(ysr(:,1),ysr(:,2), ysr(:,3), 'r','LineWidth', 3);
 % reg = plot3(yreg(:,1),yreg(:,2), yreg(:,3), 'color','#D95319', 'LineWidth', 1);
 % fl = plot3(yfl(:,1),yfl(:,2), yfl(:,3), 'g', 'LineWidth', 1);
 scatter3(L2,0,0,'b','diamond');
@@ -244,12 +244,12 @@ l = zlabel('$z$');
 set(l,'Interpreter','Latex');
 l.FontSize = 15;
 
-subplot(3,3,2);
-plot3(reffl(:,1), reffl(:,2), reffl(:,3), 'k', 'LineWidth', 1.5);
+subplot(2,2,2);
+plot3(reffl(:,1), reffl(:,2), reffl(:,3), 'k', 'LineWidth', 3);
 hold on; grid on;
-mr = plot3(ympc(:,1),ympc(:,2), ympc(:,3), 'b', 'LineWidth', 1);
+mr = plot3(ympc(:,1),ympc(:,2), ympc(:,3), 'b', 'LineWidth', 3);
 % sr = plot3(ysr(:,1),ysr(:,2), ysr(:,3), 'r','LineWidth', 1);
-reg = plot3(yreg(:,1),yreg(:,2), yreg(:,3), 'color','#D95319', 'LineWidth', 1);
+reg = plot3(yreg(:,1),yreg(:,2), yreg(:,3), 'color','#D95319', 'LineWidth', 3);
 % fl = plot3(yfl(:,1),yfl(:,2), yfl(:,3), 'g', 'LineWidth', 1);
 scatter3(L2,0,0,'b','diamond');
 xlim([1.1 1.22]);
@@ -266,13 +266,13 @@ set(l,'Interpreter','Latex');
 l.FontSize = 15;
 
 
-subplot(3,3,3);
-plot3(reffl(:,1), reffl(:,2), reffl(:,3), 'k', 'LineWidth', 1.5);
+subplot(2,2,3);
+plot3(reffl(:,1), reffl(:,2), reffl(:,3), 'k', 'LineWidth', 3);
 hold on; grid on;
-mr = plot3(ympc(:,1),ympc(:,2), ympc(:,3), 'b', 'LineWidth', 1);
+mr = plot3(ympc(:,1),ympc(:,2), ympc(:,3), 'b', 'LineWidth', 3);
 % sr = plot3(ysr(:,1),ysr(:,2), ysr(:,3), 'r','LineWidth', 1);
 % reg = plot3(yreg(:,1),yreg(:,2), yreg(:,3), 'color','#D95319', 'LineWidth', 1);
-fl = plot3(yfl(:,1),yfl(:,2), yfl(:,3), 'g', 'LineWidth', 1);
+fl = plot3(yfl(:,1),yfl(:,2), yfl(:,3), 'g', 'LineWidth', 3);
 scatter3(L2,0,0,'b','diamond');
 xlim([1.1 1.22]);
 ylim([-0.1 0.1]);
@@ -287,12 +287,15 @@ l = zlabel('$z$');
 set(l,'Interpreter','Latex');
 l.FontSize = 15;
 
-subplot(3,3,[4,6]);
-plot(ts*timescale, e_rms_mpc, 'b', 'LineWidth', 1.5);
+
+
+figure('Name','Comparisons');
+subplot(2,1,1);
+plot(ts*timescale, e_rms_mpc, 'b', 'LineWidth', 3;
 hold on; grid on;
-plot(t*timescale, e_rms_sr, 'r', 'LineWidth', 1.5);
-plot(t*timescale, e_rms_reg,  'color','#D95319','LineWidth', 1.5);
-plot(t*timescale, e_rms_fl, 'g','LineWidth', 1.5);
+plot(t*timescale, e_rms_sr, 'r', 'LineWidth', 3);
+plot(t*timescale, e_rms_reg,  'color','#D95319','LineWidth', 3);
+plot(t*timescale, e_rms_fl, 'g','LineWidth', 3);
 ylim([-0.1 0.2]);
 l = xlabel('$Time (h)$');
 set(l,'Interpreter','Latex');
@@ -302,14 +305,14 @@ set(l,'Interpreter','Latex');
 l.FontSize = 15;
 l = legend('MR MPC','Poly NMPC', 'Nonlinear regulation', 'Feedback linearization');
 set(l,'Interpreter','Latex');
-l.FontSize = 15;
+l.FontSize = 20;
 
-subplot(3,3,[7,9]);
-plot(t*timescale, norm_umpc, 'b','LineWidth', 1.5);
+subplot(2,1,2);
+plot(t*timescale, norm_umpc, 'b','LineWidth', 3);
 hold on; grid on;
-plot(t*timescale, deltaVsr,  'r','LineWidth', 1.5);
-plot(t*timescale, norm_ureg,  'color','#D95319', 'LineWidth', 1.5);
-plot(t*timescale, norm_ufl,  'g', 'LineWidth', 1.5);
+plot(t*timescale, deltaVsr,  'r','LineWidth', 3);
+plot(t*timescale, norm_ureg,  'color','#D95319', 'LineWidth', 3);
+plot(t*timescale, norm_ufl,  'g', 'LineWidth', 3);
 l = xlabel('$Time (h)$');
 set(l,'Interpreter','Latex');
 l.FontSize = 15;
