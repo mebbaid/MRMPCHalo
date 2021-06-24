@@ -7,8 +7,8 @@ clear all
 
 import casadi.*
 
-T  = 0.1; % sampling time
-Np = 10 ;   % prediction horizon
+T  = 0.01; % sampling time
+Np = 10 ; % prediction horizon
 
 % parameters
 L2 = 1.1556;
@@ -51,9 +51,11 @@ n_states = length(states);
 u1 = SX.sym('u1'); u2 = SX.sym('u2'); u3 = SX.sym('u3');
 controls = [u1; u2 ; u3];
 n_controls = length(controls);
+z1 = SX.sym('z1'); z2 = SX.sym('z2'); z3 = SX.sym('z3'); z4 = SX.sym('z4'); 
+disturbances = [z1;z2;z3;z4]; 
+n_dist = length(disturbances);
 
-
-% dynamics of unicycle 
+% dynamics of halo CR3BP prediction model
 f1 = [x4;x5;x6];
 r1 = sqrt((states(1)+mu)^2+states(2)^2+states(3)^2);
 r2 = sqrt((states(1)-1+mu)^2+states(2)^2+states(3)^2);
@@ -61,9 +63,38 @@ f2 = [2*states(5)+ states(1) - (1-mu)/r1^3*(states(1)+mu) + mu/r2^3*(states(1)-1
                  -2*states(4) + states(2) - states(2)*(1-mu)/r1^3 - states(2)*mu/r2^3;...
                  -(1-mu)*states(3)/r1^3 - mu*states(3)/r2^3];
 
-rhs = [f1;f2+controls];
+rhs  = [f1;f2+controls];
+
+% dynamics of halo ERTBP simulation model
+
+states_1 = states(1:3);
+states_2 = states(4:6);
+M = [-1 0 0;
+    0 -1 0;
+    0 0 0];
+
+N = [0 -1 0;
+    1 0 0;
+    0 0 0];
+
+d1r = [-mu - disturbances(4)/(1-mu);0;0];
+d2r = [1-mu + disturbances(4)/mu;0;0];
+
+ed1 = states_1 - d1r;
+absed1 = sqrt(ed1(1)^2+ed1(2)^2+ed1(3)^2);
+ed2 = states_1 - d2r;
+absed2 = sqrt(ed2(1)^2+ed2(2)^2+ed2(3)^2);
+
+f1d = states_2;
+f2d = -M*states_1 - 2*N*states_2 - (2*M*states_1 + 2*N*states_2)*disturbances(1) ...
+           - M*states_1*disturbances(2) - N*states_1*disturbances(3) - ed1*(1 - mu)/absed1^3 ...
+           - ed2*mu/absed2^3;
+
+rhs_d = [f1d;f2d+controls];
 
 f   = Function('f',{states,controls},{rhs});  % nonlinear mapping function object
+fd  = Function('fd',{states,controls, disturbances},{rhs_d});  % nonlinear mapping function object
+
 U   = SX.sym('U',n_controls,Np);  % decision variables along horizon
 P   = SX.sym('P',n_states+n_states*Np); % parameters including init and ref values of nlp problem
 X   = SX.sym('X',n_states,Np+1);     % states along the horizon
@@ -71,7 +102,7 @@ X   = SX.sym('X',n_states,Np+1);     % states along the horizon
 % setting OCP and computing obj and equality constraints
 obj = 0; % obj function
 g   = [];% constraints vector 
-Q   = eye(6,6); Q(1,1) = 100; Q(2,2) = 100; Q(3,3) = 100; % weights on states error;
+Q   = eye(6,6); Q(1,1) = 1000; Q(2,2) = 1000; Q(3,3) = 1000; % weights on states error;
 R   = 0.1*eye(3,3); % weights on controls
 
 st  = X(:,1);
@@ -140,7 +171,7 @@ X0 = repmat(x0,1,Np+1); % init of state decision variables
 d0 = [0;0;0;0];
 
 
-simTime = 50;
+simTime = 15;
 mpcitr = 0; % start mpc
 xx1 = [];
 u_cl = [];
@@ -176,7 +207,7 @@ while(mpcitr < simTime/T)
    t(mpcitr+1) = t0;
    d0 = dist(current_time, a,e, phi, b, mu) ;
    dstr = [dstr d0];
-   [t0, x0, u0] = shift(T,t0, x0, u,f);  % apply control and update opt problem init values x0,u0,t0
+   [t0, x0, u0] = shift(T,t0, x0, u,d0, fd);  % apply control and update opt problem init values x0,u0,t0
    xx(:,mpcitr+2) = x0;
    X0 = reshape(full(sol.x(1:n_states*(Np+1)))',n_states,Np+1)';
    X0 = [X0(2:end,:);X0(end,:)];
@@ -191,9 +222,9 @@ z = xx(3,:)'; refz = n_ref(3,:)';
 
 figure('Name','Trajectories');
 subplot(2,1,1);
-plot3(refx,refy, refz, 'k', 'LineWidth', 3);
+plot3(refx,refy, refz, 'k', 'LineWidth', 2);
 hold on; grid on;
-plot3(x,y, z, 'r', 'LineWidth', 3);
+plot3(x,y, z, 'r', 'LineWidth', 2);
 scatter3(L2,0,0,'b','diamond');
 l = xlabel('$x$');
 set(l,'Interpreter','Latex');
@@ -206,10 +237,11 @@ set(l,'Interpreter','Latex');
 l.FontSize = 15;
 
 
-function [t0, x0,u0] = shift(T,t0, x0, u,f)
+function [t0, x0,u0] = shift(T,t0, x0, u,d0,fd)
 st = x0;
 cn = u(1,:)';
-f_value = f(st,cn);
+dst = d0;
+f_value = fd(st,cn,dst);
 st = st+ (T*f_value);
 x0 = full(st);
 t0 = t0 + T;
